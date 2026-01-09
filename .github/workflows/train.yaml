@@ -1,8 +1,8 @@
 name: training pipeline
 on:
-  pull_request:
+  workflow_dispatch:
     branches:
-      - develop
+      - '**'
 jobs:
   train:
     runs-on: ubuntu-latest
