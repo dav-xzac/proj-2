@@ -1,6 +1,6 @@
 name: training pipeline
 on:
-  workflow_dispatch:
+  pull_request:
     branches:
       - develop
 jobs:
