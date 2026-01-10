@@ -1,10 +1,10 @@
 name: test workflow
 on:
-  push:
+  workflow_dispatch:
     branches: [develop]
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Workflow registrato!"
+      - run: pytest tests/
       - uses: actions/checkout@v2
