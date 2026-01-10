@@ -1,13 +1,11 @@
-from airflow.decorators import task
 from airflow.models.dag import DAG
 from airflow.providers.http.operators.http import HttpOperator
-
+import json
 
 from datetime import datetime
 
 with DAG(
     dag_id='model_training',
-    start_date=datetime(2024, 1, 1),
     catchup=False # Prevents backfilling missed runs
 ) as dag:
     def trigger_model_training():
@@ -15,13 +13,18 @@ with DAG(
             task_id='trigger_model_training',
             http_conn_id='GITHUB_API',  
             method='POST',
-            endpoint='.github/workflows/train.yaml/dispatches',  
+            endpoint='repos/dav-xzac/proj-2/actions/workflows/train.yaml/dispatches',  
             headers={
             "Authorization": "Bearer {{ conn.GITHUB_API.password }}",
             "Accept": "application/vnd.github+json",
             },
-            data='{}'  # Payload if needed
-        )
+            
+            data=json.dumps({
+            "ref": "develop",
+            "inputs": {}
+            }),  
+            response_check=lambda response: response.status_code == 204
+            )
         return training_task
     
     training = trigger_model_training()
