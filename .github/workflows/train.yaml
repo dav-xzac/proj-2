@@ -1,6 +1,6 @@
 name: training pipeline
 on:
-  push:
+  workflow_dispatch:
     branches: [develop]
 jobs:
   train:
