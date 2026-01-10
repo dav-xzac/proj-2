@@ -1,0 +1,10 @@
+name: test workflow
+on:
+  push:
+    branches: [develop]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Workflow registrato!"
+      - uses: actions/checkout@v2
