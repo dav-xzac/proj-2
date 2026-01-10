@@ -1,6 +1,7 @@
 name: training pipeline
 on:
   workflow_dispatch:
+    branches: [develop]
 jobs:
   train:
     runs-on: ubuntu-latest
