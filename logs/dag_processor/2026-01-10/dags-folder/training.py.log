@@ -1,4 +1,0 @@
-{"timestamp":"2026-01-10T00:58:26.916572Z","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/training.py","logger":"airflow.models.dagbag.DagBag","filename":"dagbag.py","lineno":593}
-{"timestamp":"2026-01-10T00:58:26.964187Z","level":"warning","event":"The `airflow.decorators.task` attribute is deprecated. Please use `'airflow.sdk.task'`.","category":"DeprecatedImportWarning","filename":"/opt/airflow/dags/training.py","lineno":1,"logger":"py.warnings"}
-{"timestamp":"2026-01-10T00:58:57.511906Z","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/training.py","logger":"airflow.models.dagbag.DagBag","filename":"dagbag.py","lineno":593}
-{"timestamp":"2026-01-10T00:58:57.526257Z","level":"warning","event":"The `airflow.decorators.task` attribute is deprecated. Please use `'airflow.sdk.task'`.","category":"DeprecatedImportWarning","filename":"/opt/airflow/dags/training.py","lineno":1,"logger":"py.warnings"}

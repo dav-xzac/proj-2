@@ -7,6 +7,14 @@ import torch
 from pathlib import Path
 torch.set_grad_enabled(False)
 
+app = FastAPI()
+
+@app.on_event("startup")
+def load_model():
+    global tokenizer, model
+    tokenizer = AutoTokenizer.from_pretrained("divde/sentiment_analysis_classifier")
+    model = AutoModelForSequenceClassification.from_pretrained("divde/sentiment_analysis_classifier")  
+    model.eval()
 
 def analyze_sentiment(text: str) -> str:
     inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True, padding=True)
@@ -16,16 +24,6 @@ def analyze_sentiment(text: str) -> str:
     predicted_class = torch.argmax(probabilities, dim=1).item()
     confidence = probabilities[0][predicted_class].item()
     return model.config.id2label[predicted_class],confidence
-
-
-app = FastAPI()
-
-@app.on_event("startup")
-def load_model():
-    global tokenizer, model
-    tokenizer = AutoTokenizer.from_pretrained("divde/sentiment_analysis_classifier")
-    model = AutoModelForSequenceClassification.from_pretrained("divde/sentiment_analysis_classifier")  
-    model.eval()
 
     
 class SentimentRequest(BaseModel):
@@ -49,6 +47,10 @@ async def root():
     </body>
     </html>
     """
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 @app.post("/predict")
 async def predict_sentiment(request: SentimentRequest):
     text = request.text
