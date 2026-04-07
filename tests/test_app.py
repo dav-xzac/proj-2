@@ -17,4 +17,4 @@ def test_predict_sentiment():
     assert response.status_code == 200
     data = response.json()
     assert data["sentiment"] in ["negative", "neutral", "positive"]
-    assert 0.0 <= data["confidence"] <= 1.0
+    assert 0.8 <= data["confidence"] <= 1.0

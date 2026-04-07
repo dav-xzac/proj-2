@@ -10,6 +10,9 @@ import os
 HF_TOKEN = os.getenv("HF_TOKEN")
 login(token=HF_TOKEN)
 
+MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
+
+
 tokenizer = AutoTokenizer.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment-latest",add_prefix_space=True)
 model = AutoModelForSequenceClassification.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment-latest", num_labels=3)
 """ tokenizer.save_pretrained("./base_model")
@@ -64,6 +67,8 @@ trainer = Trainer(
     data_collator=data_collator,
 )
 
+
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 mlflow.set_experiment("Sentiment Analysis Classifier")
 with mlflow.start_run():
     trainer.train()
