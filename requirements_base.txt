@@ -1,0 +1,6 @@
+torch==torch==2.7.0 --index-url https://download.pytorch.org/whl/cpu 
+transformers==4.36.2 
+datasets==2.16.1 
+accelerate 
+numpy 
+pandas
