@@ -1,0 +1,29 @@
+name: Deploy app to HuggingFace Space
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"          # triggera solo se cambia qualcosa in app/
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push app/ to HuggingFace Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: git remote add space https://huggingface.co/spaces/divde/sentiment_proj_5
+
+        
+      - name: Push to hub
+        env:
+          HF: ${{ secrets.HF }}
+        run: git push --force https://noahgift:$HF@huggingface.co/spaces/noahgift/demo main
