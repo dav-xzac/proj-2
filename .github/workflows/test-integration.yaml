@@ -2,7 +2,7 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [main]
-    paths: ["app/**", "tests/**"]
+    paths: ["app/**", "tests/**", ".github/workflows/**"]
 
 jobs:
   test:
