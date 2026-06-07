@@ -1,0 +1,25 @@
+name: Deploy app to HuggingFace Space
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push app/ to HuggingFace Space
+        uses: s0/git-publish-subdir-action@v2.6.0  #azione specializzata per pushare un subfolder 
+        env:
+          REPO: https://huggingface.co/spaces/divde/sentiment_proj_5
+          BRANCH: main
+          FOLDER: app
+          TOKEN: ${{ secrets.HF_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
