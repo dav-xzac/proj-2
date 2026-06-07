@@ -1,6 +1,7 @@
 name: Deploy app to HuggingFace Space
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -16,10 +17,13 @@ jobs:
           fetch-depth: 0
 
       - name: Push app/ to HuggingFace Space
-        uses: s0/git-publish-subdir-action@v2.6.0  #azione specializzata per pushare un subfolder 
         env:
-          REPO: https://huggingface.co/spaces/divde/sentiment_proj_5
-          BRANCH: main
-          FOLDER: app
-          TOKEN: ${{ secrets.HF_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "ci@github.com"
+          git config --global user.name "GitHub Actions"
+          cd app
+          git init
+          git add .
+          git commit -m "deploy: $(date +%Y-%m-%d)"
+          git push --force https://divde:$HF_TOKEN@huggingface.co/spaces/divde/sentiment_proj_5 HEAD:main
