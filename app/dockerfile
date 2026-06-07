@@ -1,11 +1,7 @@
 FROM ghcr.io/dav-xzac/mlops-base:latest AS builder
 
-# installa solo librerie dell’app
-RUN pip install --no-cache-dir \
-        fastapi \
-        pydantic \
-        uvicorn[standard] \
-        gradio
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage runtime pulito
 FROM python:3.12-slim

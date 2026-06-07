@@ -1,4 +1,4 @@
+fastapi 
+pydantic 
+uvicorn[standard] 
 gradio
-fastapi
-pydantic
-uvicorn

@@ -1,0 +1,29 @@
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths: ["app/**", "tests/**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t sentiment-app ./app
+      - name: Start container
+        run: docker run -d -p 7860:7860 --name app sentiment-app
+      - name: Wait for health
+        run: |
+          for i in {1..40}; do
+            curl -sf http://localhost:7860/health && break
+            echo "Attempt $i/30, retrying in 5s..."
+            sleep 5
+          done
+          curl -sf http://localhost:7860/health || { echo "Container failed to become healthy"; exit 1; }
+      - uses: actions/setup-python@v4
+        with: { python-version: '3.12' }
+      - run: pip install requests pytest
+      - run: pytest tests/test_integration.py
+      - if: always()
+        run: docker logs app
