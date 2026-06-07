@@ -13,7 +13,7 @@ with DAG(
             task_id='trigger_app_testing',
             http_conn_id='GITHUB_API',  
             method='POST',
-            endpoint='repos/dav-xzac/proj-2/actions/workflows/test.yaml/dispatches',  
+            endpoint='repos/dav-xzac/proj-2/actions/workflows/test-integration.yaml/dispatches',  
             headers={
             "Authorization": "Bearer {{ conn.GITHUB_API.password }}",
             "Accept": "application/vnd.github+json",
