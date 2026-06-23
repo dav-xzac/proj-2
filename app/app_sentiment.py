@@ -102,6 +102,29 @@ async def predict_sentiment(request: SentimentRequest):
     sentiment, confidence = analyze_sentiment(text)
     return {"text": text, "sentiment": sentiment, "confidence": confidence}
 
+@app.get("/daily_stats")
+def daily_stats():
+    conn = get_conn()
+    rows = conn.execute("""
+            SELECT
+                date(timestamp) as day,
+                        label,
+                        COUNT(*) as count
+            FROM predictions
+            GROUP BY day, label
+            ORDER BY day DESC
+            LIMIT 90
+            """).fetchall()
+    conn.close()
+
+    result = {}
+    for day, label, count, in rows:
+        if day not in result:
+            result[day] = {"date":day, "positive": 0, "neutral":0, "negative":0}
+            result[day][label] = count
+
+    return list(result.values())
+
 @app.get("/logs")
 async def get_logs(last_n = Query(default = 200, ge=1, le=5000)):
     with get_conn() as conn:
