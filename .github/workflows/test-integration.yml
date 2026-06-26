@@ -1,9 +1,8 @@
 on:
   workflow_dispatch:
-  push:
-    branches: [develop]
-    paths: ["app/**","tests/**", ".github/workflows/**"]
-
+  pull_request:
+    branches: [main]
+    paths: ["app/**", "tests/**", ".github/workflows/**"]
 
 jobs:
   test:
@@ -13,10 +12,7 @@ jobs:
       - name: Build image
         run: docker build -t sentiment-app ./app
       - name: Start container
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: docker run -d --network host -e HF_TOKEN=$HF_TOKEN -e MODEL=divde/sentiment_analysis_classifier --name app sentiment-app
-
+        run: docker run -d -p 7860:7860 --name app sentiment-app
       - name: Wait for health
         run: |
           for i in {1..40}; do
@@ -31,4 +27,3 @@ jobs:
       - run: pytest tests/test_integration.py
       - if: always()
         run: docker logs app
-        
