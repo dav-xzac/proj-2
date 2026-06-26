@@ -15,7 +15,8 @@ jobs:
       - name: Start container
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: docker run -d -p 7860:7860 -e HF_TOKEN=$HF_TOKEN -e MODEL=divde/sentiment_analysis_classifier --name app sentiment-app
+        run: docker run -d --network host -e HF_TOKEN=$HF_TOKEN -e MODEL=divde/sentiment_analysis_classifier --name app sentiment-app
+
       - name: Wait for health
         run: |
           for i in {1..40}; do
@@ -30,3 +31,4 @@ jobs:
       - run: pytest tests/test_integration.py
       - if: always()
         run: docker logs app
+        
