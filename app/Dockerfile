@@ -3,7 +3,7 @@ FROM ghcr.io/dav-xzac/mlops-base:latest AS builder
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Stage runtime pulito
+
 FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1
@@ -13,7 +13,7 @@ USER user
 
 WORKDIR /app
 
-# Copia solo le librerie dal builder stage
+
 COPY --from=builder /usr/local /usr/local
 
 # Copia codice dell’app
