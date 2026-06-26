@@ -15,7 +15,7 @@ torch.set_grad_enabled(False)
 
 HF_TOKEN = os.getenv("HF")
 MODEL = os.getenv("MODEL")
-# client = InferenceClient(model = MODEL, token = HF_TOKEN)
+
 
 DB_DIR = Path("/data" if Path("/data").exists() else "/tmp")
 DB_PATH = DB_DIR / "predictions.db"
@@ -100,11 +100,6 @@ async def lifespan(app: FastAPI):
     del model
     torch.cuda.empty_cache()
 
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-
-#     init_db()
-#     yield
 
 
 app = FastAPI(lifespan = lifespan)
@@ -123,26 +118,7 @@ def analyze_sentiment(text: str) -> str:
     log_prediction(text, label, confidence)
     return label,confidence
 
-# def analyze_sentiment(text: str):
-#     results = client.text_classification(text)
-#     top = max(results, key=lambda x: x.score)
-#     log_prediction(text, top.label, top.score)
-#     return top.label, top.score
-
-# import requests
-
-# def analyze_sentiment(text: str):
-#     response = requests.post(
-#         f"https://api-inference.huggingface.co/models/divde/sentiment_analysis_classifier",
-#         headers={"Authorization": f"Bearer {HF_TOKEN}"},
-#         json={"inputs": text}
-#     )
-#     results = response.json()
-#     top = max(results[0], key=lambda x: x["score"])
-#     log_prediction(text, top["label"], top["score"])
-#     return top["label"], top["score"]
-
-    
+ 
 class SentimentRequest(BaseModel):
     text: str
 
@@ -252,10 +228,6 @@ with gr.Blocks(title="Sentiment Analysis") as io:
         )
 
 
-# io = gr.Interface(
-#     fn = analyze_sentiment,
-#     inputs=gr.Textbox(label="text"), 
-#     outputs=[gr.Label(label="sentiment"), gr.Number(label="confidence")])
 app = gr.mount_gradio_app(app, io, path="/gradio")
 
 if __name__ == "__main__":
