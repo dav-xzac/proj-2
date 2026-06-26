@@ -4,18 +4,18 @@ from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import gradio as gr
 from huggingface_hub import InferenceClient
-# from transformers import AutoModelForSequenceClassification, AutoTokenizer
-# import torch
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+import torch
 import sqlite3
 import os
 from pathlib import Path
 import tempfile
 import openpyxl
-# torch.set_grad_enabled(False)
+torch.set_grad_enabled(False)
 
 HF_TOKEN = os.getenv("HF")
 MODEL = os.getenv("MODEL")
-client = InferenceClient(model = MODEL, token = HF_TOKEN)
+# client = InferenceClient(model = MODEL, token = HF_TOKEN)
 
 DB_DIR = Path("/data" if Path("/data").exists() else "/tmp")
 DB_PATH = DB_DIR / "predictions.db"
@@ -88,23 +88,23 @@ def export_to_excel(from_date,to_date,label_filter):
     wb.save(tmp.name)
     return tmp.name
 
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     global tokenizer, model
-
-#     init_db()
-#     tokenizer = AutoTokenizer.from_pretrained("divde/sentiment_analysis_classifier", token=HF_TOKEN)
-#     model = AutoModelForSequenceClassification.from_pretrained("divde/sentiment_analysis_classifier", token=HF_TOKEN)
-#     model.eval()
-#     yield
-#     del model
-#     torch.cuda.empty_cache()
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global tokenizer, model
 
     init_db()
+    tokenizer = AutoTokenizer.from_pretrained("divde/sentiment_analysis_classifier", token=HF_TOKEN)
+    model = AutoModelForSequenceClassification.from_pretrained("divde/sentiment_analysis_classifier", token=HF_TOKEN)
+    model.eval()
     yield
+    del model
+    torch.cuda.empty_cache()
+
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+
+#     init_db()
+#     yield
 
 
 app = FastAPI(lifespan = lifespan)
@@ -112,16 +112,16 @@ app = FastAPI(lifespan = lifespan)
 
 
 
-# def analyze_sentiment(text: str) -> str:
-#     inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True, padding=True)
-#     with torch.inference_mode():
-#         outputs = model(**inputs)
-#     probabilities = torch.nn.functional.softmax(outputs.logits, dim=-1)
-#     predicted_class = torch.argmax(probabilities, dim=1).item()
-#     confidence = probabilities[0][predicted_class].item()
-#     label = model.config.id2label[predicted_class]
-#     log_prediction(text, label, confidence)
-#     return label,confidence
+def analyze_sentiment(text: str) -> str:
+    inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True, padding=True)
+    with torch.inference_mode():
+        outputs = model(**inputs)
+    probabilities = torch.nn.functional.softmax(outputs.logits, dim=-1)
+    predicted_class = torch.argmax(probabilities, dim=1).item()
+    confidence = probabilities[0][predicted_class].item()
+    label = model.config.id2label[predicted_class]
+    log_prediction(text, label, confidence)
+    return label,confidence
 
 # def analyze_sentiment(text: str):
 #     results = client.text_classification(text)
@@ -129,18 +129,18 @@ app = FastAPI(lifespan = lifespan)
 #     log_prediction(text, top.label, top.score)
 #     return top.label, top.score
 
-import requests
+# import requests
 
-def analyze_sentiment(text: str):
-    response = requests.post(
-        f"https://api-inference.huggingface.co/models/divde/sentiment_analysis_classifier",
-        headers={"Authorization": f"Bearer {HF_TOKEN}"},
-        json={"inputs": text}
-    )
-    results = response.json()
-    top = max(results[0], key=lambda x: x["score"])
-    log_prediction(text, top["label"], top["score"])
-    return top["label"], top["score"]
+# def analyze_sentiment(text: str):
+#     response = requests.post(
+#         f"https://api-inference.huggingface.co/models/divde/sentiment_analysis_classifier",
+#         headers={"Authorization": f"Bearer {HF_TOKEN}"},
+#         json={"inputs": text}
+#     )
+#     results = response.json()
+#     top = max(results[0], key=lambda x: x["score"])
+#     log_prediction(text, top["label"], top["score"])
+#     return top["label"], top["score"]
 
     
 class SentimentRequest(BaseModel):
