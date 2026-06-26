@@ -2,7 +2,7 @@ on:
   workflow_dispatch:
   push:
     branches: [develop]
-    paths: ["app/**"]
+    paths: ["app/**","tests/**", ".github/workflows/**"]
 
 
 jobs:
