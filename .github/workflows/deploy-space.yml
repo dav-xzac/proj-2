@@ -8,7 +8,28 @@ on:
       - "app/**"
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t sentiment-app ./app
+      - name: Start container
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: docker run -d -p 7860:7860 -e HF_TOKEN=$HF_TOKEN -e MODEL=divde/sentiment_analysis_classifier --name app sentiment-app
+      - name: Wait for health
+        run: |
+          for i in {1..40}; do
+            curl -sf http://localhost:7860/health && break
+            sleep 5
+          done
+      - uses: actions/setup-python@v4
+        with: { python-version: '3.12' }
+      - run: pip install requests pytest
+      - run: pytest tests/test_integration.py
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
