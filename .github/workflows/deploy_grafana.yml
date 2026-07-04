@@ -1,0 +1,29 @@
+name: grafana
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "monitoring/**"
+
+jobs:
+  deploy_monitoring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+    
+      - name: Push Grafana dashboards to grafana cloud
+        env:
+          GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN}}
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $GRAFANA_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d @monitoring/grafana/sentiment.json \
+            https://mellowleek2675.grafana.net/api/dashboards/db
+
+
+
