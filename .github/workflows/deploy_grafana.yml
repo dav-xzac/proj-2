@@ -19,10 +19,13 @@ jobs:
         env:
           GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN}}
         run: |
+          jq '{dashboard: ., overwrite: true, folderId: 0}' \
+            monitoring/grafana/dashboards/sentiment.json > /tmp/payload.json
+
           curl -X POST \
             -H "Authorization: Bearer $GRAFANA_TOKEN" \
             -H "Content-Type: application/json" \
-            -d @monitoring/grafana/sentiment.json \
+            -d @/tmp/payload.json \
             https://mellowleek2675.grafana.net/api/dashboards/db
 
 
