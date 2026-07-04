@@ -1,0 +1,41 @@
+name: Automated Retrain on Kaggle
+
+on:
+    workflow_dispatch:
+    repository_dispatch:
+        types: [grafana-alert]
+
+jobs:
+    update_secrets:
+        runs-on: ubuntu-latest
+        env:
+            KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
+            KAGGLE_USERNAME: ${{ vars.KAGGLE_USERNAME }}
+            HF_TOKEN: ${{ secrets.HF_TOKEN}}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v4
+              with: { python-version: '3.12' }
+            - run : pip install kaggle --upgrade
+            - run: |
+                jq --arg token "$HF_TOKEN" '.HF_TOKEN = $token' secrets/secrets_template.json > secrets.json 
+                if kaggle dataset metadata -d $KAGGLE_USERNAME/secrets &>/dev/null; then
+                    kaggle datasets version create -p ./secrets/ -m "update"
+                else
+                    kaggle datasets create -p ./secrets/
+                fi
+
+    retrain:
+        needs: update_secrets
+        runs-on: ubuntu-latest
+        env:
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - uses: actions/setup-python@v4
+              with: { python-version: '3.12' }
+            - run: pip install kaggle --upgrade
+            - run: kaggle kernels push -p ./model/ --accelerator NvidiaTeslaT4
+
+
