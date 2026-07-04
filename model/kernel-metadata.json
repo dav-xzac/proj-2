@@ -1,5 +1,5 @@
 {
-  "id": "dav-xzac/sentiment-retraining",
+  "id": "davzacc/sentiment-retraining",
   "title": "Sentiment Retraining",
   "code_file": "training.ipynb",
   "language": "python",
@@ -7,7 +7,8 @@
   "is_private": true,
   "enable_gpu": true,
   "enable_internet": true,
-  "dataset_sources": [],
+  "dataset_sources": "davzacc/secrets",
   "competition_sources": [],
   "kernel_sources": []
+
 }
