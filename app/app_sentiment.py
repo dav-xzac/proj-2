@@ -6,87 +6,13 @@ import gradio as gr
 from huggingface_hub import InferenceClient
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
-import sqlite3
 import os
-from pathlib import Path
-import tempfile
-import openpyxl
+from db_setup import init_db,get_conn,log_prediction,export_to_excel
 torch.set_grad_enabled(False)
 
 HF_TOKEN = os.getenv("HF")
 MODEL = os.getenv("MODEL")
 
-
-DB_DIR = Path("/data" if Path("/data").exists() else "/tmp")
-DB_PATH = DB_DIR / "predictions.db"
-
-def get_conn() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def init_db():
-    with get_conn() as conn:
-        conn.execute("""
-        CREATE TABLE IF NOT EXISTS predictions (
-                     id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                     ts         TEXT    DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-                     text       TEXT    NOT NULL,
-                     label      TEXT    NOT NULL,
-                     confidence REAL    NOT NULL,
-                     text_len   INTEGER NOT NULL
-                     )
-                """)
-        conn.commit()
-
-def log_prediction(text, label, confidence):
-    with get_conn() as conn:
-        conn.execute(
-            "INSERT INTO predictions (text, label, confidence, text_len) VALUES (?,?,?,?)",
-            (text, label,round(confidence, 4), len(text))
-        )
-        conn.commit()
-
-def export_to_excel(from_date,to_date,label_filter):
-    query = "SELECT ts, text, label, confidence FROM predictions WHERE 1=1"
-    params = []
-    if label_filter and label_filter != "all":
-        query += " AND label = ?"
-        params.append(label_filter)
-    if from_date:
-        query += " AND date(ts) >= ?"
-        params.append(from_date)
-    if to_date:
-        query += " AND date(ts) <= ?"
-        params.append(to_date)
-    query += " ORDER BY ts ASC"
-
-    with get_conn() as conn:
-        rows = conn.execute(query, params).fetchall()
-
-    if not rows:
-        return None
-    
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Sentiment Report "
-    if from_date:
-        ws.title += f"from {from_date}"
-    if to_date:
-        ws.title += f"from {to_date}"
-    ws.append(["Date", "Time", "Text", "Label", "Confidence"])
-    for r in rows:
-        ws.append([r["ts"][:10], r["ts"][11:19], r["text"], r["label"], r["confidence"]])
-        ws.column_dimensions["A"].width = 12
-        ws.column_dimensions["B"].width = 10
-        ws.column_dimensions["C"].width = 60
-        ws.column_dimensions["D"].width = 12
-        ws.column_dimensions["E"].width = 12
-
-    tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete = False)
-    wb.save(tmp.name)
-    return tmp.name
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
