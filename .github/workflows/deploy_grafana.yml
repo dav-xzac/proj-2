@@ -22,7 +22,7 @@ jobs:
           curl -X POST \
             -H "Authorization: Bearer $GRAFANA_TOKEN" \
             -H "Content-Type: application/json" \
-            -d @monitoring/grafana/sentiment.json \
+            -d @monitoring/grafana/dashboards/sentiment.json \
             https://mellowleek2675.grafana.net/api/dashboards/db
 
 
