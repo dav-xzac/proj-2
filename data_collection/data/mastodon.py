@@ -9,6 +9,8 @@ from html import unescape
 INSTANCE = "mastodon.social"
 HASHTAGS = ["Anthropic", "claude"]  
 APP_URL = os.getenv("APP_PRED_URL")
+if APP_URL == None:
+    raise NameError("The domain has not been specified")
 
 
 def get_language(text: str) -> str:
