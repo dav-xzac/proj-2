@@ -337,7 +337,7 @@ services:
         condition: service_completed_successfully
 
   grafana:
-    image: grafana/grafana-enterprise
+    image: grafana/grafana-enterprise:11.4.0
     container_name: grafana
     restart: unless-stopped
     ports:
@@ -348,7 +348,7 @@ services:
       GF_INSTALL_PLUGINS: yesoreyeram-infinity-datasource
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/:/etc/grafana/provisioning
 
     
 
