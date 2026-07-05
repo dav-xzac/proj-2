@@ -11,14 +11,14 @@ on:
 jobs:
   deploy_monitoring:
     runs-on: ubuntu-latest
+    env:
+      GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN}}
+      GRAFANA_INSTANCE: ${{ vars.GRAFANA_INSTANCE}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
     
       - name: Create infinity datasource with aligned uid
-        env:
-          GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN}}
-          GRAFANA_INSTANCE: ${{ vars.GRAFANA_INSTANCE}}
         run: |
           if curl -s -f -H "Authorization: Bearer $GRAFANA_TOKEN" \
               https://$GRAFANA_INSTANCE.grafana.net/api/datasources/uid/infinity-datasource > /dev/null; then
