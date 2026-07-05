@@ -33,7 +33,7 @@ jobs:
 
       - name: Push Grafana dashboards to grafana cloud
         run: |
-          jq '{dashboard: ., overwrite: true, folderId: 0}' \
+          jq '.id = null | {dashboard: ., overwrite: true, folderId: 0}' \
             monitoring/grafana/dashboards/sentiment.json > /tmp/payload.json
 
           curl -X POST \
