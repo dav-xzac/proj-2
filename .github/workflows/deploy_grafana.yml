@@ -21,14 +21,14 @@ jobs:
           GRAFANA_INSTANCE: ${{ vars.GRAFANA_INSTANCE}}
         run: |
           if curl -s -f -H "Authorization: Bearer $GRAFANA_TOKEN" \
-              https://mellowleek2675.grafana.net/api/datasources/uid/infinity-datasource > /dev/null; then
+              https://$GRAFANA_INSTANCE.grafana.net/api/datasources/uid/infinity-datasource > /dev/null; then
             echo "Datasource already exists, skipping"
           else
             curl -X POST \
               -H "Authorization: Bearer $GRAFANA_TOKEN" \
               -H "Content-Type: application/json" \
               -d '{"name": "Infinity", "type": "yesoreyeram-infinity-datasource", "uid": "infinity-datasource", "access": "proxy", "isDefault": true}' \
-              https://mellowleek2675.grafana.net/api/datasources
+              https://$GRAFANA_INSTANCE.grafana.net/api/datasources
           fi
 
       - name: Push Grafana dashboards to grafana cloud
@@ -40,7 +40,7 @@ jobs:
             -H "Authorization: Bearer $GRAFANA_TOKEN" \
             -H "Content-Type: application/json" \
             -d @/tmp/payload.json \
-            https://{$GRAFANA_INSTANCE}.grafana.net/api/dashboards/db
+            https://$GRAFANA_INSTANCE.grafana.net/api/dashboards/db
 
 
 
