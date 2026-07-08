@@ -10,6 +10,7 @@ import os
 import subprocess
 import httpx
 from pathlib import Path
+import time
 from db_setup import init_db,get_conn,log_prediction,export_to_excel
 torch.set_grad_enabled(False)
 
@@ -34,6 +35,19 @@ async def lifespan(app: FastAPI):
         "--port", "5000",
         "--static-prefix", "/mlflow",
     ])
+
+    mlflow_ready = False
+    for _ in range(60):
+        try:
+            if httpx.get("http://127.0.0.1:5000/mlflow/", timeout=2).status_code == 200:
+                mlflow_ready = True
+                break
+        except httpx.RequestError:
+            pass
+        time.sleep(3)
+    
+    if not mlflow_ready:
+        print("WARNING: Mlflow not yet ready")
     
     yield
 
