@@ -177,7 +177,7 @@ async def mlflow_route(path: str, request: Request):
     return Response(content=routed.content, status_code= routed.status_code, headers =dict(routed.headers))
 
 with gr.Blocks(title="Sentiment Analysis") as io:
-    gr.textbox(value=MODEL_PATH, label="Serving model", interactive=False)
+    gr.Textbox(value=MODEL_PATH, label="Serving model", interactive=False)
     with gr.Tab("Analyze"):
         text_input = gr.Textbox(label="Text")
         with gr.Row():
