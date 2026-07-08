@@ -8,12 +8,17 @@ on:
 jobs:
     fetch_data_from_api:
         runs-on: ubuntu-latest
+        env: 
+            HF_TOKEN: ${{ secrets.HF_TOKEN}}
+            SPACE_URL: ${{ vars.SPACE_URL}}
+            HF_USER: ${{ vars.HF_USER}}
         steps:
             - name: api_call
               uses: actions/checkout@v4
             - uses: actions/setup-python@v4
               with: { python-version: '3.12'}
-            - run: pip install requests fast_langdetect
-            - run: python3 -m data_collection/data/mastodon.py
+            - run: pip install requests fast_langdetect huggingface_hub
+            - run: python3 data_collection/mastodon.py
+
 
 

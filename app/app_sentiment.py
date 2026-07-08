@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request, Response
 from fastapi.responses import HTMLResponse 
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
@@ -7,22 +7,63 @@ from huggingface_hub import InferenceClient
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
 import os
+import subprocess
+import httpx
+from pathlib import Path
+import time
 from db_setup import init_db,get_conn,log_prediction,export_to_excel
 torch.set_grad_enabled(False)
 
-HF_TOKEN = os.getenv("HF")
-MODEL = os.getenv("MODEL")
+HF_TOKEN = os.getenv("HF_TOKEN")
+HF_USER = os.getenv("HF_USER")
+MODEL_REPO = os.getenv("MODEL_REPO")
+MLFLOW_INTERNAL = "http://127.0.0.1:5000"
+MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
 
+if HF_TOKEN == None:
+    print("Warning: HF token doesn't exist")
+if HF_USER == None:
+    print("Warning: HF user doesn't exist")
+if MODEL_REPO == None:
+    print("Warning: model doesn't exist")
+    MODEL_REPO = "twitter-roberta-base-sentiment-latest"
+    HF_USER = "cardiffnlp"
+
+MODEL_PATH = f"{HF_USER}/{MODEL_REPO}"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global tokenizer, model
 
     init_db()
-    tokenizer = AutoTokenizer.from_pretrained("divde/sentiment_analysis_classifier", token=HF_TOKEN)
-    model = AutoModelForSequenceClassification.from_pretrained("divde/sentiment_analysis_classifier", token=HF_TOKEN)
+    tokenizer = AutoTokenizer.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
+    model = AutoModelForSequenceClassification.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
     model.eval()
+    
+    mlflow_server = subprocess.Popen([
+        "mlflow", "server",
+        "--backend-store-uri", f"sqlite:////{MLFLOW_DIR}/mlflow.db",
+        "--host", "127.0.0.1",
+        "--port", "5000",
+        "--static-prefix", "/mlflow",
+    ])
+
+    mlflow_ready = False
+    for _ in range(60):
+        try:
+            if httpx.get("http://127.0.0.1:5000/mlflow/", timeout=2).status_code == 200:
+                mlflow_ready = True
+                break
+        except httpx.RequestError:
+            pass
+        time.sleep(3)
+    
+    if not mlflow_ready:
+        print("WARNING: Mlflow not yet ready")
+    
     yield
+
+    mlflow_server.terminate()
     del model
     torch.cuda.empty_cache()
 
@@ -125,7 +166,20 @@ async def get_logs(last_n:int = Query(default = 200, ge=1, le=5000)):
         "recent_predictions":   [dict(r) for r in rows]
     }
 
+@app.api_route("/mlflow/{path:path}", methods = ["GET","POST"])
+async def mlflow_route(path: str, request: Request):
+    url = f"{MLFLOW_INTERNAL}/mlflow/{path}"
+    async with httpx.AsyncClient() as client:
+        routed = await client.request(
+            request.method, url,
+            params=request.query_params,
+            headers={k: v for k,v in request.headers.items() if k.lower() != "host"},
+            content=await request.body(),
+        )
+    return Response(content=routed.content, status_code= routed.status_code, headers =dict(routed.headers))
+
 with gr.Blocks(title="Sentiment Analysis") as io:
+    gr.Textbox(value=MODEL_PATH, label="Serving model", interactive=False)
     with gr.Tab("Analyze"):
         text_input = gr.Textbox(label="Text")
         with gr.Row():

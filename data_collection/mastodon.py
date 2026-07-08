@@ -5,10 +5,16 @@ import os
 from fast_langdetect import detect
 from concurrent.futures import ThreadPoolExecutor
 from html import unescape
+from huggingface_hub import HfApi, create_repo
+
+
 
 INSTANCE = "mastodon.social"
 HASHTAGS = ["Anthropic", "claude"]  
-APP_URL = os.getenv("APP_PRED_URL")
+SPACE_URL = os.getenv("SPACE_URL") 
+if SPACE_URL == None:
+    raise NameError("The domain has not been specified")
+APP_URL = SPACE_URL + "/predict"
 
 
 def get_language(text: str) -> str:
@@ -76,6 +82,18 @@ print(f"Post raccolti: {len(unique_posts)}")
 
 with open("./new_posts.json", "w", encoding="utf-8") as f:
     json.dump(unique_posts, f, indent=2, ensure_ascii=False)
+
+HF_USER = os.getenv("HF_USER")
+if HF_USER == None:
+    raise NameError("The HF USER has not been specified")
+api = HfApi(token=os.getenv("HF_TOKEN"))
+api.create_repo(repo_id=f"{HF_USER}/sentiment_posts", repo_type="dataset", exist_ok=True)
+api.upload_file(
+    path_or_fileobj="./new_posts.json",
+    path_in_repo="new_posts.json",
+    repo_id=f"{HF_USER}/sentiment_posts",
+    repo_type="dataset"
+)
 
 texts = [post["text"] for post in unique_posts]
 def send_post(text):

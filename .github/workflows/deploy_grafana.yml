@@ -11,22 +11,36 @@ on:
 jobs:
   deploy_monitoring:
     runs-on: ubuntu-latest
+    env:
+      GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN}}
+      GRAFANA_INSTANCE: ${{ vars.GRAFANA_INSTANCE}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
     
-      - name: Push Grafana dashboards to grafana cloud
-        env:
-          GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN}}
+      - name: Create infinity datasource with aligned uid
         run: |
-          jq '{dashboard: ., overwrite: true, folderId: 0}' \
+          if curl -s -f -H "Authorization: Bearer $GRAFANA_TOKEN" \
+              https://$GRAFANA_INSTANCE.grafana.net/api/datasources/uid/infinity-datasource > /dev/null; then
+            echo "Datasource already exists, skipping"
+          else
+            curl -X POST \
+              -H "Authorization: Bearer $GRAFANA_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"name": "Infinity", "type": "yesoreyeram-infinity-datasource", "uid": "infinity-datasource", "access": "proxy", "isDefault": true}' \
+              https://$GRAFANA_INSTANCE.grafana.net/api/datasources
+          fi
+
+      - name: Push Grafana dashboards to grafana cloud
+        run: |
+          jq '.id = null | {dashboard: ., overwrite: true, folderId: 0}' \
             monitoring/grafana/dashboards/sentiment.json > /tmp/payload.json
 
           curl -X POST \
             -H "Authorization: Bearer $GRAFANA_TOKEN" \
             -H "Content-Type: application/json" \
             -d @/tmp/payload.json \
-            https://mellowleek2675.grafana.net/api/dashboards/db
+            https://$GRAFANA_INSTANCE.grafana.net/api/dashboards/db
 
 
 
