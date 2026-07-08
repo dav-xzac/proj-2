@@ -12,13 +12,23 @@ jobs:
             KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
             KAGGLE_USERNAME: ${{ vars.KAGGLE_USERNAME }}
             HF_TOKEN: ${{ secrets.HF_TOKEN}}
+            HF_USER: ${{ vars.HF_USER}}
+            SPACE_URL: ${{ vars.SPACE_URL }}
+            MODEL_REPO: ${{ vars.MODEL_REPO}}
+            METRICS_REPO: ${{ vars.METRICS_REPO}}
+            SYNTH_DATA_REPO: ${{ vars.SYNTH_DATA_REPO}}
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-python@v4
               with: { python-version: '3.12' }
             - run : pip install kaggle --upgrade
             - run: |
-                jq --arg token "$HF_TOKEN" '.HF_TOKEN = $token' secrets/secrets_template.json > secrets.json 
+                jq --arg token "$HF_TOKEN" --arg user "$HF_USER" \
+                   --arg repo "$MODEL_REPO" --arg metrics "$METRICS_REPO" \
+                   --arg synth "$SYNTH_DATA_REPO" --arg space "$SPACE_URL" \
+                   '.HF_TOKEN = $token | .HF_USER = $user | .MODEL_REPO = $repo | .METRICS_REPO = $metrics | .SYNTH_DATA_REPO = $synth | .SPACE_URL= $space' \
+                   secrets/secrets_template.json > secrets/secrets.json 
+
                 if kaggle dataset metadata -d $KAGGLE_USERNAME/secrets &>/dev/null; then
                     kaggle datasets version create -p ./secrets/ -m "update"
                 else
