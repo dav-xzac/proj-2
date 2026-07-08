@@ -5,7 +5,7 @@ sys.modules['transformers'] = MagicMock()
 sys.modules['torch'] = MagicMock()
 
 from fastapi.testclient import TestClient
-from app import app
+from app_sentiment import app
 
 client = TestClient(app)
 

@@ -9,12 +9,14 @@ import torch
 import os
 import subprocess
 import httpx
+from pathlib import Path
 from db_setup import init_db,get_conn,log_prediction,export_to_excel
 torch.set_grad_enabled(False)
 
 HF_TOKEN = os.getenv("HF")
 MODEL = os.getenv("MODEL")
 MLFLOW_INTERNAL = "http://127.0.0.1:5000"
+MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,7 +29,7 @@ async def lifespan(app: FastAPI):
     
     mlflow_server = subprocess.Popen([
         "mlflow", "server",
-        "--backend-store-uri", "sqlite:////data/mlflow.db",
+        "--backend-store-uri", f"sqlite:////{MLFLOW_DIR}/mlflow.db",
         "--host", "127.0.0.1",
         "--port", "5000",
         "--static-prefix", "/mlflow",
