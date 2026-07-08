@@ -142,7 +142,7 @@ async def get_logs(last_n:int = Query(default = 200, ge=1, le=5000)):
 
 @app.api_route("/mlflow/{path:path}", methods = ["GET","POST"])
 async def mlflow_route(path: str, request: Request):
-    url = f"{MLFLOW_INTERNAL}/{path}"
+    url = f"{MLFLOW_INTERNAL}/mlflow/{path}"
     async with httpx.AsyncClient() as client:
         routed = await client.request(
             request.method, url,
