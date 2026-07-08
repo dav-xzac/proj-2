@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request, Response
 from fastapi.responses import HTMLResponse 
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
@@ -7,12 +7,14 @@ from huggingface_hub import InferenceClient
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
 import os
+import subprocess
+import httpx
 from db_setup import init_db,get_conn,log_prediction,export_to_excel
 torch.set_grad_enabled(False)
 
 HF_TOKEN = os.getenv("HF")
 MODEL = os.getenv("MODEL")
-
+MLFLOW_INTERNAL = "http://127.0.0.1:5000"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,7 +24,18 @@ async def lifespan(app: FastAPI):
     tokenizer = AutoTokenizer.from_pretrained("divde/sentiment_analysis_classifier", token=HF_TOKEN)
     model = AutoModelForSequenceClassification.from_pretrained("divde/sentiment_analysis_classifier", token=HF_TOKEN)
     model.eval()
+    
+    mlflow_server = subprocess.Popen([
+        "mlflow", "server",
+        "--backend-store-uri", "sqlite:////data/mlflow.db",
+        "--host", "127.0.0.1",
+        "--port", "5000",
+        "--static-prefix", "/mlflow",
+    ])
+    
     yield
+
+    mlflow_server.terminate()
     del model
     torch.cuda.empty_cache()
 
@@ -124,6 +137,18 @@ async def get_logs(last_n:int = Query(default = 200, ge=1, le=5000)):
         "avg_text_length":      round(avg_len or 0, 1),
         "recent_predictions":   [dict(r) for r in rows]
     }
+
+@app.api_route("/mlflow/{path:path}", methods = ["GET","POST"])
+async def mlflow_route(path: str, request: Request):
+    url = f"{MLFLOW_INTERNAL}/path"
+    async with httpx.AsyncClient() as client:
+        routed = await client.request(
+            request.method, url,
+            params=request.query_params,
+            headers={k: v for k,v in request.headers.items() if k.lower() != "host"},
+            content=await request.body(),
+        )
+    return Response(content=routed.content, status_code= routed.status_code, headers =dict(routed.headers))
 
 with gr.Blocks(title="Sentiment Analysis") as io:
     with gr.Tab("Analyze"):
