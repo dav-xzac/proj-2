@@ -24,6 +24,17 @@ jobs:
             sleep 5
           done
           curl -sf http://localhost:7860/health || { echo "Container failed to become healthy"; exit 1; }
+      
+      - name: Wait for MLflow
+        run: |
+          for i in {1..40}; do
+            curl -sf http://localhost:7860/mlflow/ && break
+            echo "Attempt $i/40, retrying in 2s..."
+            sleep 2
+          done
+          curl -sf http://localhost:7860/mlflow/ || { echo "MLflow failed to start"; docker logs app; exit 1; } 
+      
+      
       - uses: actions/setup-python@v4
         with: { python-version: '3.12' }
       - run: pip install requests pytest
