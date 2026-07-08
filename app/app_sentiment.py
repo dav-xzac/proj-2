@@ -17,7 +17,6 @@ torch.set_grad_enabled(False)
 HF_TOKEN = os.getenv("HF_TOKEN")
 HF_USER = os.getenv("HF_USER")
 MODEL_REPO = os.getenv("MODEL_REPO")
-MODEL_PATH = f"{HF_USER}/{MODEL_REPO}"
 MLFLOW_INTERNAL = "http://127.0.0.1:5000"
 MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
 
@@ -27,7 +26,10 @@ if HF_USER == None:
     print("Warning: HF user doesn't exist")
 if MODEL_REPO == None:
     print("Warning: model doesn't exist")
-    MODEL_REPO = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    MODEL_REPO = "twitter-roberta-base-sentiment-latest"
+    HF_USER = "cardiffnlp"
+
+MODEL_PATH = f"{HF_USER}/{MODEL_REPO}"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
