@@ -23,6 +23,16 @@ jobs:
               with: { python-version: '3.12' }
             - run : pip install kaggle --upgrade
             - run: |
+
+                jq --arg id "$KAGGLE_USERNAME/sentiment-retraining" --arg secrets "$KAGGLE_USERNAME/secrets" \
+                    '.id = $id | .dataset_sources = [$secrets]' \
+                    model/kernel-metadata_template.json > model/kernel-metadata.json
+
+                jq --arg id "$KAGGLE_USERNAME/secrets" \
+                    '.id = $id' \
+                    secrets/dataset-metadata_template.json > secrets/dataset-metadata.json
+                
+
                 jq --arg token "$HF_TOKEN" --arg user "$HF_USER" \
                    --arg repo "$MODEL_REPO" --arg metrics "$METRICS_REPO" \
                    --arg synth "$SYNTH_DATA_REPO" --arg space "$SPACE_URL" \
