@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import gradio as gr
-from huggingface_hub import InferenceClient
+from huggingface_hub import InferenceClient, repo_exists
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
 import os
@@ -20,12 +20,17 @@ MODEL_REPO = os.getenv("MODEL_REPO")
 MLFLOW_INTERNAL = "http://127.0.0.1:5000"
 MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
 
+ASPECT = os.getenv("COMPANY", "anthropic")
+
 if HF_TOKEN == None:
-    print("Warning: HF token doesn't exist")
+    print("Warning: HF_TOKEN secret is not defined")
 if HF_USER == None:
-    print("Warning: HF user doesn't exist")
-if MODEL_REPO == None:
-    print("Warning: model doesn't exist")
+    print("Warning: HF_USER var is not defined")
+
+MODEL_EXISTS = HF_USER and MODEL_REPO and repo_exists(HF_USER + "/" + MODEL_REPO)
+
+if not MODEL_EXISTS:
+    print("Warning: model doesn't exist yet on huggingface")
     MODEL_REPO = "twitter-roberta-base-sentiment-latest"
     HF_USER = "cardiffnlp"
 
@@ -75,7 +80,7 @@ app = FastAPI(lifespan = lifespan)
 
 
 def analyze_sentiment(text: str) -> str:
-    inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True, padding=True)
+    inputs = tokenizer(text,ASPECT, return_tensors="pt", max_length=512, truncation=True, padding=True)
     with torch.inference_mode():
         outputs = model(**inputs)
     probabilities = torch.nn.functional.softmax(outputs.logits, dim=-1)
