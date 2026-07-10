@@ -1,7 +1,7 @@
 {
   "id": "davzacc/sentiment-retraining",
   "title": "Sentiment Retraining",
-  "code_file": "training.ipynb",
+  "code_file": "retraining.ipynb",
   "language": "python",
   "kernel_type": "notebook",
   "is_private": true,
