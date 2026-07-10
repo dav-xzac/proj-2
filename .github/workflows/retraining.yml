@@ -40,7 +40,7 @@ jobs:
                    secrets/secrets_template.json > secrets/secrets.json 
 
                 if kaggle datasets metadata -d $KAGGLE_USERNAME/secrets &>/dev/null; then
-                    kaggle datasets version create -p ./secrets/ -m "update"
+                    kaggle datasets version -p ./secrets/ -m "update"
                 else
                     kaggle datasets create -p ./secrets/
                 fi
