@@ -1,12 +1,17 @@
 from fastapi import FastAPI, Query, Request, Response
+from fastapi import FastAPI, Query, Request, Response
 from fastapi.responses import HTMLResponse 
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import gradio as gr
-from huggingface_hub import InferenceClient
+from huggingface_hub import InferenceClient, repo_exists
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
 import os
+import subprocess
+import httpx
+from pathlib import Path
+import time
 import subprocess
 import httpx
 from pathlib import Path
@@ -20,12 +25,17 @@ MODEL_REPO = os.getenv("MODEL_REPO")
 MLFLOW_INTERNAL = "http://127.0.0.1:5000"
 MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
 
+ASPECT = os.getenv("COMPANY", "anthropic")
+
 if HF_TOKEN == None:
-    print("Warning: HF token doesn't exist")
+    print("Warning: HF_TOKEN secret is not defined")
 if HF_USER == None:
-    print("Warning: HF user doesn't exist")
-if MODEL_REPO == None:
-    print("Warning: model doesn't exist")
+    print("Warning: HF_USER var is not defined")
+
+MODEL_EXISTS = HF_USER and MODEL_REPO and repo_exists(HF_USER + "/" + MODEL_REPO)
+
+if not MODEL_EXISTS:
+    print("Warning: model doesn't exist yet on huggingface")
     MODEL_REPO = "twitter-roberta-base-sentiment-latest"
     HF_USER = "cardiffnlp"
 
@@ -36,6 +46,8 @@ async def lifespan(app: FastAPI):
     global tokenizer, model
 
     init_db()
+    tokenizer = AutoTokenizer.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
+    model = AutoModelForSequenceClassification.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
     tokenizer = AutoTokenizer.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
     model = AutoModelForSequenceClassification.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
     model.eval()
@@ -61,7 +73,31 @@ async def lifespan(app: FastAPI):
     if not mlflow_ready:
         print("WARNING: Mlflow not yet ready")
     
+    
+    mlflow_server = subprocess.Popen([
+        "mlflow", "server",
+        "--backend-store-uri", f"sqlite:////{MLFLOW_DIR}/mlflow.db",
+        "--host", "127.0.0.1",
+        "--port", "5000",
+        "--static-prefix", "/mlflow",
+    ])
+
+    mlflow_ready = False
+    for _ in range(60):
+        try:
+            if httpx.get("http://127.0.0.1:5000/mlflow/", timeout=2).status_code == 200:
+                mlflow_ready = True
+                break
+        except httpx.RequestError:
+            pass
+        time.sleep(3)
+    
+    if not mlflow_ready:
+        print("WARNING: Mlflow not yet ready")
+    
     yield
+
+    mlflow_server.terminate()
 
     mlflow_server.terminate()
     del model
@@ -75,7 +111,7 @@ app = FastAPI(lifespan = lifespan)
 
 
 def analyze_sentiment(text: str) -> str:
-    inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True, padding=True)
+    inputs = tokenizer(text,ASPECT, return_tensors="pt", max_length=512, truncation=True, padding=True)
     with torch.inference_mode():
         outputs = model(**inputs)
     probabilities = torch.nn.functional.softmax(outputs.logits, dim=-1)
@@ -178,7 +214,20 @@ async def mlflow_route(path: str, request: Request):
         )
     return Response(content=routed.content, status_code= routed.status_code, headers =dict(routed.headers))
 
+@app.api_route("/mlflow/{path:path}", methods = ["GET","POST"])
+async def mlflow_route(path: str, request: Request):
+    url = f"{MLFLOW_INTERNAL}/mlflow/{path}"
+    async with httpx.AsyncClient() as client:
+        routed = await client.request(
+            request.method, url,
+            params=request.query_params,
+            headers={k: v for k,v in request.headers.items() if k.lower() != "host"},
+            content=await request.body(),
+        )
+    return Response(content=routed.content, status_code= routed.status_code, headers =dict(routed.headers))
+
 with gr.Blocks(title="Sentiment Analysis") as io:
+    gr.Textbox(value=MODEL_PATH, label="Serving model", interactive=False)
     gr.Textbox(value=MODEL_PATH, label="Serving model", interactive=False)
     with gr.Tab("Analyze"):
         text_input = gr.Textbox(label="Text")
