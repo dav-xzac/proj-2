@@ -29,7 +29,7 @@ jobs:
                    '.HF_TOKEN = $token | .HF_USER = $user | .MODEL_REPO = $repo | .METRICS_REPO = $metrics | .SYNTH_DATA_REPO = $synth | .SPACE_URL= $space' \
                    secrets/secrets_template.json > secrets/secrets.json 
 
-                if kaggle dataset metadata -d $KAGGLE_USERNAME/secrets &>/dev/null; then
+                if kaggle datasets metadata -d $KAGGLE_USERNAME/secrets &>/dev/null; then
                     kaggle datasets version create -p ./secrets/ -m "update"
                 else
                     kaggle datasets create -p ./secrets/
