@@ -164,16 +164,49 @@ def daily_stats():
             """).fetchall()
     conn.close()
 
+    conf_rows = conn.execute("""
+            SELECT
+                date(ts) as day,
+                AVG(confidence) as avg_confidence
+            FROM predictions
+            GROUP BY day
+            ORDER BY day DESC
+            LIMIT 90
+            """).fetchall()
+    conn.close()
+
     result = {}
     for day, label, count, in rows:
         if day not in result:
             result[day] = {"date":day, "positive": 0, "neutral":0, "negative":0}
         result[day][label] = count
 
+    for day, avg_conf in conf_rows:
+        if day in result:
+            result[day]["avg_confidence"] = round(avg_conf, 4)
+
+
     return list(result.values())
 
+@app.get("/weekly_stats")
+def weekly_stats():
+    with get_conn() as conn:
+        row = conn.execute("""
+            SELECT
+                COUNT(*) as total,
+                AVG(confidence) as avg_confidence
+            FROM predictions
+            WHERE ts >= datetime('now', '-7 days')
+        """).fetchone()
+
+    return {
+        "total_predictions_7d": row["total"],
+        "avg_confidence_7d": round(row["avg_confidence"] or 0, 4),
+    }
+
+
 @app.get("/logs")
-async def get_logs(last_n:int = Query(default = 200, ge=1, le=5000)):
+async def get_logs(last_n:int = Query(default = 2000, ge=1, le=5000)):
     with get_conn() as conn:
         rows = conn.execute(
             "SELECT ts, label, confidence, text_len FROM predictions ORDER BY id DESC LIMIT ?",
