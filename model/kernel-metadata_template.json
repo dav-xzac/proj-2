@@ -1,13 +1,13 @@
 {
-  "id": "davzacc/sentiment-retraining",
+  "id": "your_username/sentiment-retraining",
   "title": "Sentiment Retraining",
-  "code_file": "training.ipynb",
+  "code_file": "retraining.ipynb",
   "language": "python",
   "kernel_type": "notebook",
   "is_private": true,
   "enable_gpu": true,
   "enable_internet": true,
-  "dataset_sources": "davzacc/secrets",
+  "dataset_sources": ["your_username/secrets"],
   "competition_sources": [],
   "kernel_sources": []
 

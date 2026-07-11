@@ -14,6 +14,7 @@ jobs:
     env:
       GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN}}
       GRAFANA_INSTANCE: ${{ vars.GRAFANA_INSTANCE}}
+      SPACE_URL: ${{ vars.SPACE_URL}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,7 +34,9 @@ jobs:
 
       - name: Push Grafana dashboards to grafana cloud
         run: |
-          jq '.id = null | {dashboard: ., overwrite: true, folderId: 0}' \
+          jq --arg url "$SPACE_URL" --arg placehold "SPACE_URL" \
+            'walk(if type == "string" then gsub($placehold; $url) else . end)
+            |.id = null | {dashboard: ., overwrite: true, folderId: 0}' \
             monitoring/grafana/dashboards/sentiment.json > /tmp/payload.json
 
           curl -X POST \

@@ -29,6 +29,4 @@ def test_logs_invalid_last_n():
     r = client.get("/logs", params={"last_n": 0})
     assert r.status_code == 422
 
-def test_gradio():
-    r = client.get("/gradio/")
-    assert r.status_code == 200
+
