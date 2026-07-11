@@ -1,11 +1,10 @@
 from fastapi import FastAPI, Query, Request, Response
-from fastapi import FastAPI, Query, Request, Response
-from fastapi.responses import HTMLResponse 
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import gradio as gr
 from huggingface_hub import InferenceClient, repo_exists
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from huggingface_hub import HfApi
 import torch
 import os
 import subprocess
@@ -22,6 +21,10 @@ torch.set_grad_enabled(False)
 HF_TOKEN = os.getenv("HF_TOKEN")
 HF_USER = os.getenv("HF_USER")
 MODEL_REPO = os.getenv("MODEL_REPO")
+GRAFANA_URL = os.getenv("GRAFANA_URL")
+KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME", "")
+KAGGLE_NOTEBOOK_URL = f"https://www.kaggle.com/code/{KAGGLE_USERNAME}/sentiment-retraining" if KAGGLE_USERNAME else None
+ASPECT = os.getenv("COMPANY", "anthropic")
 MLFLOW_INTERNAL = "http://127.0.0.1:5000"
 MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
 
@@ -121,28 +124,21 @@ def analyze_sentiment(text: str) -> str:
     log_prediction(text, label, confidence)
     return label,confidence
 
+
+def get_latest_model_version(model_path):
+    try:
+        refs = HfApi().list_repo_refs(model_path)
+        tags = sorted(t.name for t in refs.tags)
+        return tags[-1] if tags else "no_version"
+    except Exception:
+        return "no_version"
+    
+MODEL_VERSION = get_latest_model_version(MODEL_PATH)
  
 class SentimentRequest(BaseModel):
     text: str
 
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    return """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <div align="center">
-            <title>Sentiment Analysis classifier</title>
-    </head>
-    <body> 
-        <h1>Welcome to the Sentiment Analysis Classifier API</h1>
-        <p>Use the /predict endpoint to analyze sentiment.</p>
-        <a href="/gradio/">Procedi all' applicazione gradio</a>
-    </body>
-    </html>
-    """
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
@@ -214,21 +210,12 @@ async def mlflow_route(path: str, request: Request):
         )
     return Response(content=routed.content, status_code= routed.status_code, headers =dict(routed.headers))
 
-@app.api_route("/mlflow/{path:path}", methods = ["GET","POST"])
-async def mlflow_route(path: str, request: Request):
-    url = f"{MLFLOW_INTERNAL}/mlflow/{path}"
-    async with httpx.AsyncClient() as client:
-        routed = await client.request(
-            request.method, url,
-            params=request.query_params,
-            headers={k: v for k,v in request.headers.items() if k.lower() != "host"},
-            content=await request.body(),
-        )
-    return Response(content=routed.content, status_code= routed.status_code, headers =dict(routed.headers))
 
 with gr.Blocks(title="Sentiment Analysis") as io:
-    gr.Textbox(value=MODEL_PATH, label="Serving model", interactive=False)
-    gr.Textbox(value=MODEL_PATH, label="Serving model", interactive=False)
+    gr.Textbox(value=f"{MODEL_PATH}({MODEL_VERSION})", label="Serving model", interactive=False)
+    gr.Markdown(
+        f"[GRAFANA]({GRAFANA_URL}) &nbsp;·&nbsp; [MLflow](/mlflow) &nbsp;·&nbsp; [Training Notebook]({KAGGLE_NOTEBOOK_URL})"
+    )
     with gr.Tab("Analyze"):
         text_input = gr.Textbox(label="Text")
         with gr.Row():
@@ -257,7 +244,7 @@ with gr.Blocks(title="Sentiment Analysis") as io:
         )
 
 
-app = gr.mount_gradio_app(app, io, path="/gradio")
+app = gr.mount_gradio_app(app, io, path="/")
 
 if __name__ == "__main__":
     import uvicorn

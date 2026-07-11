@@ -87,7 +87,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "https://divde-sentiment-proj-5.hf.space/logs",
+          "url": "SPACE_URL/logs",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -162,7 +162,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "https://divde-sentiment-proj-5.hf.space/logs",
+          "url": "SPACE_URL/logs",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -283,7 +283,7 @@
           "root_selector": "$.recent_predictions[*]",
           "source": "url",
           "type": "json",
-          "url": "https://divde-sentiment-proj-5.hf.space/logs",
+          "url": "SPACE_URL/logs",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -397,7 +397,7 @@
           "root_selector": "[\n  {\"label\": \"positive\", \"ratio\": label_ratios.positive},\n  {\"label\": \"neutral\",  \"ratio\": label_ratios.neutral},\n  {\"label\": \"negative\", \"ratio\": label_ratios.negative}\n]\n\n",
           "source": "url",
           "type": "json",
-          "url": "https://divde-sentiment-proj-5.hf.space/logs",
+          "url": "SPACE_URL/logs",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -497,7 +497,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "https://divde-sentiment-proj-5.hf.space/daily_stats",
+          "url": "SPACE_URL/daily_stats",
           "url_options": {
             "data": "",
             "method": "GET"
