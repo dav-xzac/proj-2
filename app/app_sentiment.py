@@ -1,6 +1,4 @@
 from fastapi import FastAPI, Query, Request, Response
-from fastapi import FastAPI, Query, Request, Response
-from fastapi.responses import HTMLResponse 
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import gradio as gr
@@ -12,20 +10,18 @@ import subprocess
 import httpx
 from pathlib import Path
 import time
-import subprocess
-import httpx
-from pathlib import Path
-import time
 from db_setup import init_db,get_conn,log_prediction,export_to_excel
 torch.set_grad_enabled(False)
 
 HF_TOKEN = os.getenv("HF_TOKEN")
 HF_USER = os.getenv("HF_USER")
 MODEL_REPO = os.getenv("MODEL_REPO")
+GRAFANA_URL = os.getenv("GRAFANA_URL")
+KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME", "")
+KAGGLE_NOTEBOOK_URL = f"https://www.kaggle.com/code/{KAGGLE_USERNAME}/sentiment-retraining" if KAGGLE_USERNAME else None
+ASPECT = os.getenv("COMPANY", "anthropic")
 MLFLOW_INTERNAL = "http://127.0.0.1:5000"
 MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
-
-ASPECT = os.getenv("COMPANY", "anthropic")
 
 if HF_TOKEN == None:
     print("Warning: HF_TOKEN secret is not defined")
@@ -46,8 +42,6 @@ async def lifespan(app: FastAPI):
     global tokenizer, model
 
     init_db()
-    tokenizer = AutoTokenizer.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
-    model = AutoModelForSequenceClassification.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
     tokenizer = AutoTokenizer.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
     model = AutoModelForSequenceClassification.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
     model.eval()
@@ -73,31 +67,7 @@ async def lifespan(app: FastAPI):
     if not mlflow_ready:
         print("WARNING: Mlflow not yet ready")
     
-    
-    mlflow_server = subprocess.Popen([
-        "mlflow", "server",
-        "--backend-store-uri", f"sqlite:////{MLFLOW_DIR}/mlflow.db",
-        "--host", "127.0.0.1",
-        "--port", "5000",
-        "--static-prefix", "/mlflow",
-    ])
-
-    mlflow_ready = False
-    for _ in range(60):
-        try:
-            if httpx.get("http://127.0.0.1:5000/mlflow/", timeout=2).status_code == 200:
-                mlflow_ready = True
-                break
-        except httpx.RequestError:
-            pass
-        time.sleep(3)
-    
-    if not mlflow_ready:
-        print("WARNING: Mlflow not yet ready")
-    
     yield
-
-    mlflow_server.terminate()
 
     mlflow_server.terminate()
     del model
@@ -125,24 +95,7 @@ def analyze_sentiment(text: str) -> str:
 class SentimentRequest(BaseModel):
     text: str
 
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    return """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <div align="center">
-            <title>Sentiment Analysis classifier</title>
-    </head>
-    <body> 
-        <h1>Welcome to the Sentiment Analysis Classifier API</h1>
-        <p>Use the /predict endpoint to analyze sentiment.</p>
-        <a href="/gradio/">Procedi all' applicazione gradio</a>
-    </body>
-    </html>
-    """
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
@@ -214,21 +167,12 @@ async def mlflow_route(path: str, request: Request):
         )
     return Response(content=routed.content, status_code= routed.status_code, headers =dict(routed.headers))
 
-@app.api_route("/mlflow/{path:path}", methods = ["GET","POST"])
-async def mlflow_route(path: str, request: Request):
-    url = f"{MLFLOW_INTERNAL}/mlflow/{path}"
-    async with httpx.AsyncClient() as client:
-        routed = await client.request(
-            request.method, url,
-            params=request.query_params,
-            headers={k: v for k,v in request.headers.items() if k.lower() != "host"},
-            content=await request.body(),
-        )
-    return Response(content=routed.content, status_code= routed.status_code, headers =dict(routed.headers))
 
 with gr.Blocks(title="Sentiment Analysis") as io:
     gr.Textbox(value=MODEL_PATH, label="Serving model", interactive=False)
-    gr.Textbox(value=MODEL_PATH, label="Serving model", interactive=False)
+    gr.Markdown(
+        f"[GRAFANA]({GRAFANA_URL}) &nbsp;·&nbsp; [MLflow](/mlflow) &nbsp;·&nbsp; [Training Notebook]({KAGGLE_NOTEBOOK_URL})"
+    )
     with gr.Tab("Analyze"):
         text_input = gr.Textbox(label="Text")
         with gr.Row():
@@ -257,7 +201,7 @@ with gr.Blocks(title="Sentiment Analysis") as io:
         )
 
 
-app = gr.mount_gradio_app(app, io, path="/gradio")
+app = gr.mount_gradio_app(app, io, path="/")
 
 if __name__ == "__main__":
     import uvicorn
