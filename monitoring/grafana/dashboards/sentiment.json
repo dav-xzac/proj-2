@@ -18,9 +18,92 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
-  "links": [],
+  "liveNow": false,
   "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 18,
+        "x": 0,
+        "y": 0
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": true
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.2.0-28852654685",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "total_predictions_7d",
+              "text": "weekly_prediction",
+              "type": "number"
+            },
+            {
+              "selector": "avg_confidence_7d",
+              "text": "weekly_confidence",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-datasource"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "SPACE_URL/weekly_stats",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "weekly confidence",
+      "type": "stat"
+    },
     {
       "datasource": {
         "type": "yesoreyeram-infinity-datasource",
@@ -29,13 +112,12 @@
       "description": "Total prediction",
       "fieldConfig": {
         "defaults": {
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -43,13 +125,12 @@
               }
             ]
           }
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
-        "h": 3,
+        "h": 7,
         "w": 6,
-        "x": 0,
+        "x": 18,
         "y": 0
       },
       "id": 1,
@@ -71,7 +152,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.4.0",
+      "pluginVersion": "13.2.0-28852654685",
       "targets": [
         {
           "columns": [],
@@ -104,13 +185,12 @@
       },
       "fieldConfig": {
         "defaults": {
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -118,14 +198,13 @@
               }
             ]
           }
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 3,
-        "w": 14,
-        "x": 6,
-        "y": 0
+        "w": 13,
+        "x": 0,
+        "y": 7
       },
       "id": 2,
       "options": {
@@ -146,7 +225,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.4.0",
+      "pluginVersion": "13.2.0-28852654685",
       "targets": [
         {
           "columns": [],
@@ -206,6 +285,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -215,13 +295,12 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -229,16 +308,15 @@
               }
             ]
           }
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 3
+        "h": 11,
+        "w": 11,
+        "x": 13,
+        "y": 7
       },
-      "id": 3,
+      "id": 7,
       "options": {
         "annotations": {
           "clustering": -1,
@@ -247,6 +325,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
           "placement": "bottom",
           "showLegend": true
         },
@@ -256,18 +336,18 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.4.0",
+      "pluginVersion": "13.2.0-28852654685",
       "targets": [
         {
           "columns": [
             {
-              "selector": "ts",
-              "text": "Time",
+              "selector": "date",
+              "text": "date",
               "type": "timestamp"
             },
             {
-              "selector": "confidence",
-              "text": "confidence",
+              "selector": "avg_confidence",
+              "text": "avg_confidence",
               "type": "number"
             }
           ],
@@ -276,21 +356,21 @@
             "uid": "infinity-datasource"
           },
           "filters": [],
-          "format": "timeseries",
+          "format": "table",
           "global_query_id": "",
           "parser": "backend",
           "refId": "A",
-          "root_selector": "$.recent_predictions[*]",
+          "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "SPACE_URL/logs",
+          "url": "SPACE_URL/daily_stats",
           "url_options": {
             "data": "",
             "method": "GET"
           }
         }
       ],
-      "title": "confidence ts",
+      "title": "Daily confidence",
       "type": "timeseries"
     },
     {
@@ -324,13 +404,12 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -338,14 +417,13 @@
               }
             ]
           }
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 3
+        "w": 13,
+        "x": 0,
+        "y": 10
       },
       "id": 5,
       "options": {
@@ -356,6 +434,7 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
+          "overflow": "ellipsis",
           "placement": "bottom",
           "showLegend": true
         },
@@ -370,7 +449,7 @@
         "xTickLabelRotation": 0,
         "xTickLabelSpacing": 0
       },
-      "pluginVersion": "11.4.0",
+      "pluginVersion": "13.2.0-28852654685",
       "targets": [
         {
           "columns": [
@@ -422,15 +501,17 @@
             "cellOptions": {
               "type": "auto"
             },
+            "footer": {
+              "reducers": []
+            },
             "inspect": false
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -438,29 +519,20 @@
               }
             ]
           }
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
-        "h": 8,
-        "w": 15,
+        "h": 10,
+        "w": 13,
         "x": 0,
-        "y": 11
+        "y": 18
       },
       "id": 6,
       "options": {
         "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
         "showHeader": true
       },
-      "pluginVersion": "11.4.0",
+      "pluginVersion": "13.2.0-28852654685",
       "targets": [
         {
           "columns": [
@@ -506,23 +578,154 @@
       ],
       "title": "Daily stats",
       "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 11,
+        "x": 13,
+        "y": 18
+      },
+      "id": 3,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.2.0-28852654685",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "ts",
+              "text": "Time",
+              "type": "timestamp"
+            },
+            {
+              "selector": "confidence",
+              "text": "confidence",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-datasource"
+          },
+          "filters": [],
+          "format": "timeseries",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "$.recent_predictions[*]",
+          "source": "url",
+          "type": "json",
+          "url": "SPACE_URL/logs",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "confidence ts",
+      "type": "timeseries"
     }
   ],
   "preload": false,
   "refresh": "",
-  "schemaVersion": 40,
-  "tags": [],
-  "templating": {
-    "list": []
-  },
+  "schemaVersion": 42,
   "time": {
-    "from": "now-6h",
+    "from": "now-7d",
     "to": "now"
   },
-  "timepicker": {},
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
   "timezone": "browser",
   "title": "MLOPS proj",
+  "version": 6,
   "uid": "ad28prg",
-  "version": 2,
-  "weekStart": ""
+  "id": 1813765900845056
 }
