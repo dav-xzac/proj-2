@@ -11,10 +11,6 @@ import subprocess
 import httpx
 from pathlib import Path
 import time
-import subprocess
-import httpx
-from pathlib import Path
-import time
 from db_setup import init_db,get_conn,log_prediction,export_to_excel
 torch.set_grad_enabled(False)
 
@@ -28,7 +24,6 @@ ASPECT = os.getenv("COMPANY", "anthropic")
 MLFLOW_INTERNAL = "http://127.0.0.1:5000"
 MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
 
-ASPECT = os.getenv("COMPANY", "anthropic")
 
 if HF_TOKEN == None:
     print("Warning: HF_TOKEN secret is not defined")
@@ -49,8 +44,6 @@ async def lifespan(app: FastAPI):
     global tokenizer, model
 
     init_db()
-    tokenizer = AutoTokenizer.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
-    model = AutoModelForSequenceClassification.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
     tokenizer = AutoTokenizer.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
     model = AutoModelForSequenceClassification.from_pretrained(f"{MODEL_PATH}", token=HF_TOKEN)
     model.eval()
@@ -75,32 +68,8 @@ async def lifespan(app: FastAPI):
     
     if not mlflow_ready:
         print("WARNING: Mlflow not yet ready")
-    
-    
-    mlflow_server = subprocess.Popen([
-        "mlflow", "server",
-        "--backend-store-uri", f"sqlite:////{MLFLOW_DIR}/mlflow.db",
-        "--host", "127.0.0.1",
-        "--port", "5000",
-        "--static-prefix", "/mlflow",
-    ])
-
-    mlflow_ready = False
-    for _ in range(60):
-        try:
-            if httpx.get("http://127.0.0.1:5000/mlflow/", timeout=2).status_code == 200:
-                mlflow_ready = True
-                break
-        except httpx.RequestError:
-            pass
-        time.sleep(3)
-    
-    if not mlflow_ready:
-        print("WARNING: Mlflow not yet ready")
-    
+   
     yield
-
-    mlflow_server.terminate()
 
     mlflow_server.terminate()
     del model
@@ -162,7 +131,6 @@ def daily_stats():
             ORDER BY day DESC
             LIMIT 90
             """).fetchall()
-    conn.close()
 
     conf_rows = conn.execute("""
             SELECT
