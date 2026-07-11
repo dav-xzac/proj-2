@@ -214,7 +214,7 @@ async def mlflow_route(path: str, request: Request):
 with gr.Blocks(title="Sentiment Analysis") as io:
     gr.Textbox(value=f"{MODEL_PATH}({MODEL_VERSION})", label="Serving model", interactive=False)
     gr.Markdown(
-        f"[GRAFANA]({GRAFANA_URL}) &nbsp;·&nbsp; [MLflow](/mlflow) &nbsp;·&nbsp; [Training Notebook]({KAGGLE_NOTEBOOK_URL})"
+        f"[GRAFANA]({GRAFANA_URL}) &nbsp;·&nbsp; [MLflow](/mlflow/) &nbsp;·&nbsp; [Training Notebook]({KAGGLE_NOTEBOOK_URL})"
     )
     with gr.Tab("Analyze"):
         text_input = gr.Textbox(label="Text")
