@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 import gradio as gr
 from huggingface_hub import InferenceClient, repo_exists
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from huggingface_hub import HfApi
 import torch
 import os
 import subprocess
@@ -91,6 +92,16 @@ def analyze_sentiment(text: str) -> str:
     log_prediction(text, label, confidence)
     return label,confidence
 
+
+def get_latest_model_version(model_path):
+    try:
+        refs = HfApi().list_repo_refs(model_path)
+        tags = sorted(t.name for t in refs.tags)
+        return tags[-1] if tags else "no_version"
+    except Exception:
+        return "no_version"
+    
+MODEL_VERSION = get_latest_model_version(MODEL_PATH)
  
 class SentimentRequest(BaseModel):
     text: str
@@ -169,7 +180,7 @@ async def mlflow_route(path: str, request: Request):
 
 
 with gr.Blocks(title="Sentiment Analysis") as io:
-    gr.Textbox(value=MODEL_PATH, label="Serving model", interactive=False)
+    gr.Textbox(value=f"{MODEL_PATH}({MODEL_VERSION})", label="Serving model", interactive=False)
     gr.Markdown(
         f"[GRAFANA]({GRAFANA_URL}) &nbsp;·&nbsp; [MLflow](/mlflow) &nbsp;·&nbsp; [Training Notebook]({KAGGLE_NOTEBOOK_URL})"
     )
