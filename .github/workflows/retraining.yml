@@ -25,10 +25,6 @@ jobs:
             - run: |
                 mkdir -p /tmp/kaggle-secrets
 
-                jq --arg id "$KAGGLE_USERNAME/sentiment-retraining" --arg secrets "$KAGGLE_USERNAME/secrets" \
-                    '.id = $id | .dataset_sources = [$secrets]' \
-                    model/kernel-metadata_template.json > model/kernel-metadata.json
-
                 jq --arg id "$KAGGLE_USERNAME/secrets" \
                     '.id = $id' \
                     secrets/dataset-metadata_template.json > /tmp/kaggle-secrets/dataset-metadata.json
@@ -50,13 +46,18 @@ jobs:
         needs: update_secrets
         runs-on: ubuntu-latest
         env:
-          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
+            KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
+            KAGGLE_USERNAME: ${{ vars.KAGGLE_USERNAME }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
             - uses: actions/setup-python@v4
               with: { python-version: '3.12' }
             - run: pip install kaggle --upgrade
+            - run: |
+                jq --arg id "$KAGGLE_USERNAME/sentiment-retraining" --arg secrets "$KAGGLE_USERNAME/secrets" \
+                    '.id = $id | .dataset_sources = [$secrets]' \
+                    model/kernel-metadata_template.json > model/kernel-metadata.json
             - run: kaggle kernels push -p ./model/ --accelerator NvidiaTeslaT4
 
 
