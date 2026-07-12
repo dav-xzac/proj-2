@@ -20,6 +20,7 @@ MODEL_REPO = os.getenv("MODEL_REPO")
 GRAFANA_URL = os.getenv("GRAFANA_URL")
 KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME", "")
 KAGGLE_NOTEBOOK_URL = f"https://www.kaggle.com/code/{KAGGLE_USERNAME}/sentiment-retraining" if KAGGLE_USERNAME else None
+GITHUB_REPO_URL = os.getenv("GITHUB_REPO_URL", "https://github.com/dav-xzac/proj-2")
 ASPECT = os.getenv("COMPANY", "anthropic")
 MLFLOW_INTERNAL = "http://127.0.0.1:5000"
 MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
@@ -214,9 +215,15 @@ async def mlflow_route(path: str, request: Request):
 
 with gr.Blocks(title="Sentiment Analysis") as io:
     gr.Textbox(value=f"{MODEL_PATH}({MODEL_VERSION})", label="Serving model", interactive=False)
-    gr.Markdown(
-        f"[GRAFANA]({GRAFANA_URL}) &nbsp;·&nbsp; [MLflow](/mlflow/) &nbsp;·&nbsp; [Training Notebook]({KAGGLE_NOTEBOOK_URL})"
-    )
+    with gr.Row():
+        with gr.Column():
+            gr.Markdown(
+                f"**Public Links**\n\n[MLflow](/mlflow/) &nbsp;·&nbsp; [GitHub Repo]({GITHUB_REPO_URL})"
+            )
+        with gr.Column():
+            gr.Markdown(
+                f"**Admin Links**\n\n[GRAFANA]({GRAFANA_URL}) &nbsp;·&nbsp; [Training Notebook]({KAGGLE_NOTEBOOK_URL})"
+                )
     with gr.Tab("Analyze"):
         text_input = gr.Textbox(label="Text")
         with gr.Row():

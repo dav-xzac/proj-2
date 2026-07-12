@@ -16,14 +16,14 @@ jobs:
             - id: check
               run: |
                 stats=$(curl -s "$SPACE_URL/weekly_stats")
-                total=(echo "$stats" | jq '.total_predictions_7d')
-                avg=$(echo "$stats" | jq '.acg_confidence_7d')
+                total=$(echo "$stats" | jq '.total_predictions_7d')
+                avg=$(echo "$stats" | jq '.avg_confidence_7d')
                 echo "Week Total Predictions: $total | Avg confidence: $avg"
 
                 if ((total < 100 )); then
                     echo "Insufficent data collected, skip retraining"
                     echo "drift=false" >> "$GITHUB_OUTPUT"
-                elif (( $(echo "$avg < 0.80" | bc -1) )); then
+                elif (( $(echo "$avg < 0.80" | bc -l) )); then
                     echo "drift=true" >> "$GITHUB_OUTPUT"
                 else
                     echo "drift=false" >> "$GITHUB_OUTPUT"
