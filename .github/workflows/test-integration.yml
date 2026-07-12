@@ -3,9 +3,7 @@ on:
   pull_request:
     branches: [main]
     paths: ["app/**", "tests/**", ".github/workflows/**"]
-  push:
-    branches: [develop]
-    paths: ["app/**"]
+  
 
 jobs:
   test:
