@@ -21,6 +21,8 @@ GRAFANA_URL = os.getenv("GRAFANA_URL")
 KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME", "")
 KAGGLE_NOTEBOOK_URL = f"https://www.kaggle.com/code/{KAGGLE_USERNAME}/sentiment-retraining" if KAGGLE_USERNAME else None
 GITHUB_REPO_URL = os.getenv("GITHUB_REPO_URL", "https://github.com/dav-xzac/proj-2")
+SYNTH_DATA_REPO = os.getenv("SYNTH_DATA_REPO", "")
+SYNTH_DATA_URL = f"https://huggingface.co/datasets/{HF_USER}/{SYNTH_DATA_REPO}" if SYNTH_DATA_REPO else None
 ASPECT = os.getenv("COMPANY", "anthropic")
 MLFLOW_INTERNAL = "http://127.0.0.1:5000"
 MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
@@ -218,7 +220,7 @@ with gr.Blocks(title="Sentiment Analysis") as io:
     with gr.Row():
         with gr.Column():
             gr.Markdown(
-                f"**Public Links**\n\n[MLflow](/mlflow/) &nbsp;·&nbsp; [GitHub Repo]({GITHUB_REPO_URL})"
+                f"**Public Links**\n\n[MLflow](/mlflow/) &nbsp;·&nbsp; [GitHub Repo]({GITHUB_REPO_URL} &nbsp;·&nbsp;[Synthetic Data]({SYNTH_DATA_URL})"
             )
         with gr.Column():
             gr.Markdown(

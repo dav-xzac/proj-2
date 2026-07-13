@@ -44,6 +44,7 @@ jobs:
             MODEL_REPO: ${{ vars.MODEL_REPO}}
             METRICS_REPO: ${{ vars.METRICS_REPO}}
             SYNTH_DATA_REPO: ${{ vars.SYNTH_DATA_REPO}}
+            SPACE_NAME: ${{ vars.SPACE_NAME}}
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-python@v4
@@ -57,10 +58,10 @@ jobs:
                     secrets/dataset-metadata_template.json > /tmp/kaggle-secrets/dataset-metadata.json
                 
 
-                jq --arg token "$HF_TOKEN" --arg user "$HF_USER" \
+                jq --arg token "$HF_TOKEN" --arg user "$HF_USER" --arg spacename "$SPACE_NAME\
                    --arg repo "$MODEL_REPO" --arg metrics "$METRICS_REPO" \
                    --arg synth "$SYNTH_DATA_REPO" --arg space "$SPACE_URL" \
-                   '.HF_TOKEN = $token | .HF_USER = $user | .MODEL_REPO = $repo | .METRICS_REPO = $metrics | .SYNTH_DATA_REPO = $synth | .SPACE_URL= $space' \
+                   '.HF_TOKEN = $token | .HF_USER = $user | .MODEL_REPO = $repo | .METRICS_REPO = $metrics | .SYNTH_DATA_REPO = $synth | .SPACE_URL= $space | .SPACE_NAME= $spacename' \
                    secrets/secrets_template.json > /tmp/kaggle-secrets/secrets.json
 
                 if kaggle datasets metadata -d $KAGGLE_USERNAME/secrets &>/dev/null; then
