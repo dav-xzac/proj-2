@@ -220,7 +220,7 @@ with gr.Blocks(title="Sentiment Analysis") as io:
     with gr.Row():
         with gr.Column():
             gr.Markdown(
-                f"**Public Links**\n\n[MLflow](/mlflow/) &nbsp;·&nbsp; [GitHub Repo]({GITHUB_REPO_URL} &nbsp;·&nbsp;[Synthetic Data]({SYNTH_DATA_URL})"
+                f"**Public Links**\n\n[MLflow](/mlflow/) &nbsp;·&nbsp; [GitHub Repo]({GITHUB_REPO_URL}) &nbsp;·&nbsp; [Synthetic Data]({SYNTH_DATA_URL})"
             )
         with gr.Column():
             gr.Markdown(
