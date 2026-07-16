@@ -12,6 +12,7 @@ jobs:
             HF_TOKEN: ${{ secrets.HF_TOKEN}}
             SPACE_URL: ${{ vars.SPACE_URL}}
             HF_USER: ${{ vars.HF_USER}}
+            COMPANY: ${{ vars.COMPANY}}
         steps:
             - name: api_call
               uses: actions/checkout@v4

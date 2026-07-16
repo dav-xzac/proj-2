@@ -1,0 +1,14 @@
+{
+  "id": "your_username/synth_generation",
+  "title": "Synth Generation",
+  "code_file": "data_generation.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": ["your_username/secrets"],
+  "competition_sources": [],
+  "kernel_sources": []
+
+}
