@@ -21,7 +21,7 @@ jobs:
                 echo "Week Total Predictions: $total | Avg confidence: $avg"
 
                 if ((total < 100 )); then
-                    echo "Insufficent data collected, skip retraining"
+                    echo "Insufficient data collected, skip retraining"
                     echo "drift=false" >> "$GITHUB_OUTPUT"
                 elif (( $(echo "$avg < 0.80" | bc -l) )); then
                     echo "drift=true" >> "$GITHUB_OUTPUT"
@@ -45,30 +45,15 @@ jobs:
             METRICS_REPO: ${{ vars.METRICS_REPO}}
             SYNTH_DATA_REPO: ${{ vars.SYNTH_DATA_REPO}}
             SPACE_NAME: ${{ vars.SPACE_NAME}}
+            COMPANY: ${{ vars.COMPANY}}
+            COMPANY_DESC: ${{ vars.COMPANY_DESC}}
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-python@v4
               with: { python-version: '3.12' }
             - run : pip install kaggle --upgrade
-            - run: |
-                mkdir -p /tmp/kaggle-secrets
+            - run: bash scripts/update_kaggle_secrets.sh
 
-                jq --arg id "$KAGGLE_USERNAME/secrets" \
-                    '.id = $id' \
-                    secrets/dataset-metadata_template.json > /tmp/kaggle-secrets/dataset-metadata.json
-                
-
-                jq --arg token "$HF_TOKEN" --arg user "$HF_USER" --arg spacename "$SPACE_NAME\
-                   --arg repo "$MODEL_REPO" --arg metrics "$METRICS_REPO" \
-                   --arg synth "$SYNTH_DATA_REPO" --arg space "$SPACE_URL" \
-                   '.HF_TOKEN = $token | .HF_USER = $user | .MODEL_REPO = $repo | .METRICS_REPO = $metrics | .SYNTH_DATA_REPO = $synth | .SPACE_URL= $space | .SPACE_NAME= $spacename' \
-                   secrets/secrets_template.json > /tmp/kaggle-secrets/secrets.json
-
-                if kaggle datasets metadata -d $KAGGLE_USERNAME/secrets &>/dev/null; then
-                    kaggle datasets version -p /tmp/kaggle-secrets -m "update"
-                else
-                    kaggle datasets create -p /tmp/kaggle-secrets
-                fi
 
     retrain:
         needs: [check_drift, update_secrets]
