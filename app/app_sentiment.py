@@ -220,7 +220,7 @@ with gr.Blocks(title="Sentiment Analysis") as io:
     with gr.Row():
         with gr.Column():
             gr.Markdown(
-                f"**Public Links**\n\n[MLflow](/mlflow/) &nbsp;·&nbsp; [GitHub Repo]({GITHUB_REPO_URL} &nbsp;·&nbsp;[Synthetic Data]({SYNTH_DATA_URL})"
+                f"**Public Links**\n\n[MLflow](/mlflow/) &nbsp;·&nbsp; [GitHub Repo]({GITHUB_REPO_URL}) &nbsp;·&nbsp; [Synthetic Data]({SYNTH_DATA_URL})"
             )
         with gr.Column():
             gr.Markdown(
@@ -237,7 +237,7 @@ with gr.Blocks(title="Sentiment Analysis") as io:
             outputs = [sentiment_output, confidence_output]
         )
     
-    with gr.Tab("Export"):
+    with gr.Tab("Export past predictions"):
         with gr.Row():
             from_input = gr.Textbox(label="From (YYYY-MM-DD)", placeholder = "2026-06-01")
             to_input = gr.Textbox(label="To (YYYY-MM-DD)", placeholder = "2026-06-20")

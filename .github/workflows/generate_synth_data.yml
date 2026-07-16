@@ -1,0 +1,54 @@
+name: generate synthetic data
+
+on:
+    workflow_dispatch:
+    schedule:
+        - cron: '22 7 * * 0'
+
+
+jobs:
+    update_secrets:
+        runs-on: ubuntu-latest
+        env:
+            KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
+            KAGGLE_USERNAME: ${{ vars.KAGGLE_USERNAME }}
+            HF_TOKEN: ${{ secrets.HF_TOKEN}}
+            HF_USER: ${{ vars.HF_USER}}
+            SPACE_URL: ${{ vars.SPACE_URL }}
+            MODEL_REPO: ${{ vars.MODEL_REPO}}
+            METRICS_REPO: ${{ vars.METRICS_REPO}}
+            SYNTH_DATA_REPO: ${{ vars.SYNTH_DATA_REPO}}
+            SPACE_NAME: ${{ vars.SPACE_NAME}}
+            COMPANY: ${{ vars.COMPANY}}
+            COMPANY_DESC: ${{ vars.COMPANY_DESC}}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v4
+              with: { python-version: '3.12'}
+            - run : pip install kaggle --upgrade
+            - run: bash scripts/update_kaggle_secrets.sh
+    
+    generate_data:
+        needs: update_secrets
+        runs-on: ubuntu-latest
+        env:
+            KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
+            KAGGLE_USERNAME: ${{ vars.KAGGLE_USERNAME }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - uses: actions/setup-python@v4
+              with: { python-version: '3.12' }
+            - run: pip install kaggle --upgrade
+            
+            - run: |
+                jq --arg id "$KAGGLE_USERNAME/sentiment-synth-generation" --arg secrets "$KAGGLE_USERNAME/secrets" \
+                    '.id = $id | .dataset_sources = [$secrets]' \
+                    synth_generation/kernel-metadata_template.json > synth_generation/kernel-metadata.json
+            - run: kaggle kernels push -p ./synth_generation/ --accelerator NvidiaTeslaT4
+
+
+
+
+
+
