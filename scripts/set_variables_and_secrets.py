@@ -1,9 +1,9 @@
 import os
 from huggingface_hub import HfApi
 
-HF_TOKEN = os.getenv("HF_TOKEN")
-HF_USER = os.getenv("HF_USER")
-SPACE_NAME = os.getenv("SPACE_NAME")
+HF_TOKEN = os.environ["HF_TOKEN"]
+HF_USER = os.environ["HF_USER"]
+SPACE_NAME = os.environ["SPACE_NAME"]
 
 api = HfApi(token=HF_TOKEN)
 repo_id = f"{HF_USER}/{SPACE_NAME}"
@@ -13,11 +13,11 @@ repo_id = f"{HF_USER}/{SPACE_NAME}"
 SECRETS = {"HF_TOKEN": HF_TOKEN}
 VARIABLES = {
     "HF_USER": HF_USER,
-    "MODEL_REPO": os.getenv("MODEL_REPO"),
-    "GRAFANA_URL": os.getenv("GRAFANA_URL"),
-    "KAGGLE_USERNAME": os.getenv("KAGGLE_USERNAME"),
-    "COMPANY": os.getenv("COMPANY"),
-    "SYNTH_DATA_REPO": os.getenv("SYNTH_DATA_REPO"),
+    "MODEL_REPO": os.environ["MODEL_REPO"],
+    "GRAFANA_URL": os.environ["GRAFANA_URL"],
+    "KAGGLE_USERNAME": os.environ["KAGGLE_USERNAME"],
+    "COMPANY": os.environ["COMPANY"],
+    "SYNTH_DATA_REPO": os.environ["SYNTH_DATA_REPO"],
 }
 
 existing_secrets = api.get_space_secrets(repo_id=repo_id)
