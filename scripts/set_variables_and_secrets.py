@@ -31,7 +31,7 @@ for key, value in SECRETS.items():
 existing_vars = api.get_space_variables(repo_id=repo_id)
 for key, value in VARIABLES.items():
     if key not in existing_vars:
-        print(f"Imposto variabile {key}")
+        print(f"Set variable {key}")
         api.add_space_variable(repo_id=repo_id, key=key, value=value)
     else:
         print(f"Variable {key} already exists")
