@@ -2,7 +2,7 @@ import requests
 import re
 import json
 import os
-from fast_langdetect import detect
+from langdetect import detect
 from concurrent.futures import ThreadPoolExecutor
 from html import unescape
 from huggingface_hub import HfApi, create_repo, hf_hub_download
@@ -21,7 +21,10 @@ if HF_USER == None:
 APP_URL = SPACE_URL + "/predict"
 
 def get_language(text: str) -> str:
-    return detect(text, model="auto", k=1)[0]["lang"]
+    try:
+        return detect(text)
+    except Exception:
+        return "unknown"
 
 def clean_html(html: str) -> str:
     clean = unescape(html)
