@@ -9,25 +9,16 @@ jobs:
     check_drift:
         runs-on: ubuntu-latest
         outputs:
-            drift: ${{ steps.check.outputs.drift}}
+            drift: ${{ steps.check.outputs.drift }}
         env:
-            SPACE_URL: ${{ vars.SPACE_URL}}
+            SPACE_URL: ${{ vars.SPACE_URL }}
         steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v4
+              with: { python-version: '3.12' }
+            - run: pip install requests
             - id: check
-              run: |
-                stats=$(curl -s "$SPACE_URL/weekly_stats")
-                total=$(echo "$stats" | jq '.total_predictions_7d')
-                avg=$(echo "$stats" | jq '.avg_confidence_7d')
-                echo "Week Total Predictions: $total | Avg confidence: $avg"
-
-                if ((total < 100 )); then
-                    echo "Insufficient data collected, skip retraining"
-                    echo "drift=false" >> "$GITHUB_OUTPUT"
-                elif (( $(echo "$avg < 0.80" | bc -l) )); then
-                    echo "drift=true" >> "$GITHUB_OUTPUT"
-                else
-                    echo "drift=false" >> "$GITHUB_OUTPUT"
-                fi
+              run: echo "drift=$(python scripts/check_drift.py)" >> "$GITHUB_OUTPUT"
 
 
 
@@ -52,7 +43,7 @@ jobs:
             - uses: actions/setup-python@v4
               with: { python-version: '3.12' }
             - run : pip install kaggle --upgrade
-            - run: bash scripts/update_kaggle_secrets.sh
+            - run: python scripts/update_kaggle_secrets.py
 
 
     retrain:
@@ -68,10 +59,6 @@ jobs:
             - uses: actions/setup-python@v4
               with: { python-version: '3.12' }
             - run: pip install kaggle --upgrade
-            - run: |
-                jq --arg id "$KAGGLE_USERNAME/sentiment-retraining" --arg secrets "$KAGGLE_USERNAME/secrets" \
-                    '.id = $id | .dataset_sources = [$secrets]' \
-                    model/kernel-metadata_template.json > model/kernel-metadata.json
-            - run: kaggle kernels push -p ./model/ --accelerator NvidiaTeslaT4
+            - run: python scripts/push_kaggle_kernel.py model sentiment-retraining
 
 

@@ -18,32 +18,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - run: pip install requests
     
-      - name: Create infinity datasource with aligned uid
-        run: |
-          if curl -s -f -H "Authorization: Bearer $GRAFANA_TOKEN" \
-              https://$GRAFANA_INSTANCE.grafana.net/api/datasources/uid/infinity-datasource > /dev/null; then
-            echo "Datasource already exists, skipping"
-          else
-            curl -X POST \
-              -H "Authorization: Bearer $GRAFANA_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d '{"name": "Infinity", "type": "yesoreyeram-infinity-datasource", "uid": "infinity-datasource", "access": "proxy", "isDefault": true}' \
-              https://$GRAFANA_INSTANCE.grafana.net/api/datasources
-          fi
-
-      - name: Push Grafana dashboards to grafana cloud
-        run: |
-          jq --arg url "$SPACE_URL" --arg placehold "SPACE_URL" \
-            'walk(if type == "string" then gsub($placehold; $url) else . end)
-            |.id = null | {dashboard: ., overwrite: true, folderId: 0}' \
-            monitoring/grafana/dashboards/sentiment.json > /tmp/payload.json
-
-          curl -X POST \
-            -H "Authorization: Bearer $GRAFANA_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d @/tmp/payload.json \
-            https://$GRAFANA_INSTANCE.grafana.net/api/dashboards/db
+      - name: Create infinity datasource with aligned uid and push dashboard
+        run: python scripts/deploy_grafana.py
 
 
 
