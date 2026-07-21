@@ -49,8 +49,9 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider distributions you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.1.5}
-  # build: .
+  build: 
+    context: .
+    dockerfile: Dockerfile.airflow
   env_file:
     - ${ENV_FILE_PATH:-.env}
   environment:
@@ -60,7 +61,7 @@ x-airflow-common:
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
-    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-}
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow-apiserver:8080/execution/'
@@ -80,7 +81,16 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/model:/opt/airflow/model
-    - ${AIRFLOW_PROJ_DIR:-.}/simulation:/opt/airflow/simulation
+    - ${AIRFLOW_PROJ_DIR:-.}/scripts:/opt/airflow/scripts
+    - ${AIRFLOW_PROJ_DIR:-.}/secrets:/opt/airflow/secrets
+    - ${AIRFLOW_PROJ_DIR:-.}/monitoring:/opt/airflow/monitoring
+    - ${AIRFLOW_PROJ_DIR:-.}/data_collection:/opt/airflow/data_collection
+    - ${AIRFLOW_PROJ_DIR:-.}/app:/opt/airflow/app
+    - ${AIRFLOW_PROJ_DIR:-.}/synth_generation:/opt/airflow/synth_generation
+    - ${AIRFLOW_PROJ_DIR:-.}/tests:/opt/airflow/tests
+
+
+
 
   user: "${AIRFLOW_UID}:0"
   depends_on:
@@ -355,3 +365,4 @@ services:
 volumes:
   postgres-db-volume:
   grafana_data:
+  langdetect_cache:
