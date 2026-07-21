@@ -19,10 +19,13 @@ HF_USER = os.getenv("HF_USER")
 MODEL_REPO = os.getenv("MODEL_REPO")
 GRAFANA_URL = os.getenv("GRAFANA_URL")
 KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME", "")
-KAGGLE_NOTEBOOK_URL = f"https://www.kaggle.com/code/{KAGGLE_USERNAME}/sentiment-retraining" if KAGGLE_USERNAME else None
+KAGGLE_NOTEBOOK_TRAINING_URL = f"https://www.kaggle.com/code/{KAGGLE_USERNAME}/sentiment-retraining" if KAGGLE_USERNAME else None
+KAGGLE_NOTEBOOK_GENERATION_URL = f"https://www.kaggle.com/code/{KAGGLE_USERNAME}/synth-generation" if KAGGLE_USERNAME else None
 GITHUB_REPO_URL = os.getenv("GITHUB_REPO_URL", "https://github.com/dav-xzac/proj-2")
 SYNTH_DATA_REPO = os.getenv("SYNTH_DATA_REPO", "")
 SYNTH_DATA_URL = f"https://huggingface.co/datasets/{HF_USER}/{SYNTH_DATA_REPO}" if SYNTH_DATA_REPO else None
+POSTS_REPO = os.getenv("POSTS_REPO","")
+POSTS_REPO_URL = f"https://huggingface.co/datasets/{HF_USER}/{POSTS_REPO}" if POSTS_REPO else None
 ASPECT = os.getenv("COMPANY", "anthropic")
 MLFLOW_INTERNAL = "http://127.0.0.1:5000"
 MLFLOW_DIR = Path("/data" if Path("/data").exists() else "/tmp")
@@ -37,10 +40,11 @@ MODEL_EXISTS = HF_USER and MODEL_REPO and repo_exists(HF_USER + "/" + MODEL_REPO
 
 if not MODEL_EXISTS:
     print("Warning: model doesn't exist yet on huggingface")
-    MODEL_REPO = "twitter-roberta-base-sentiment-latest"
-    HF_USER = "cardiffnlp"
+    MODEL_PATH = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
+else:
+    MODEL_PATH = f"{HF_USER}/{MODEL_REPO}"
 
-MODEL_PATH = f"{HF_USER}/{MODEL_REPO}"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -220,12 +224,32 @@ with gr.Blocks(title="Sentiment Analysis") as io:
     with gr.Row():
         with gr.Column():
             gr.Markdown(
-                f"**Public Links**\n\n[MLflow](/mlflow/) &nbsp;·&nbsp; [GitHub Repo]({GITHUB_REPO_URL}) &nbsp;·&nbsp; [Synthetic Data]({SYNTH_DATA_URL})"
+                f"**Training Records**\n\n[MLflow](/mlflow/)"
             )
         with gr.Column():
             gr.Markdown(
-                f"**Admin Links**\n\n[GRAFANA]({GRAFANA_URL}) &nbsp;·&nbsp; [Training Notebook]({KAGGLE_NOTEBOOK_URL})"
+                f"**Synth dataset**\n\n[Synthetic Data]({SYNTH_DATA_URL})"
+            )
+        with gr.Column():
+            gr.Markdown(
+                f"**Posts dataset**\n\n[Posts Data]({POSTS_REPO_URL})"
+            )
+        with gr.Column():
+            gr.Markdown(
+            f"**Source Code**\n\n[GitHub Repo]({GITHUB_REPO_URL})"
+            )
+        with gr.Column():
+            gr.Markdown(
+                f"**Monitoring**\n\n[GRAFANA]({GRAFANA_URL})"
                 )
+        with gr.Column():
+            gr.Markdown(
+                f"**Training Notebook**\n\n[Training Notebook]({KAGGLE_NOTEBOOK_TRAINING_URL})"
+            )
+        with gr.Column():
+            gr.Markdown(
+                f"**Generation Notebook**\n\n[Generation Notebook]({KAGGLE_NOTEBOOK_GENERATION_URL})"
+            )
     with gr.Tab("Analyze"):
         text_input = gr.Textbox(label="Text")
         with gr.Row():
