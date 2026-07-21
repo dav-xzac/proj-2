@@ -14,8 +14,14 @@ api.create_repo()
 line in -> scripts/deploy_space.py 
 will allow a direct setup of the space page on huggingface as this one [Sentiment_Analysis](
 https://divde-sentiment-proj-5.hf.space) 
+The above listed space contains direct links to access all other deployed integrations of the app  
+(Retrain, Data Generation, Grafana, MLFLOW, Datasets)
+Note: config files kernel-metadata for kaggle defaults to private:false for public review on this project  
+however during testing appeared that sometimes kaggle reverted the visibility to private.  
+It can be manually set in the notebook settings, where it i indicated with a padlock.
 
 Deployment of the application under the above circumstances would be also possible from a local airflow setup included in this repo or directly launching the deploy_space.py
+
 
 | TECH | TASK | RESULT |
 | --- | --- | --- |
