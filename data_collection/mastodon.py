@@ -19,6 +19,8 @@ HF_USER = os.getenv("HF_USER")
 if HF_USER == None:
     raise NameError("The HF USER has not been specified")
 APP_URL = SPACE_URL + "/predict"
+POSTS_REPO = os.getenv("POSTS_REPO", "sentiment_posts")
+
 
 def get_language(text: str) -> str:
     try:
@@ -103,7 +105,7 @@ for post, pred in zip(unique_posts, predictions):
         post["confidence"] = pred.get("confidence")
 
 try:
-    existing_path = hf_hub_download(repo_id=f"{HF_USER}/sentiment_posts", filename="new_posts.json", repo_type="dataset")
+    existing_path = hf_hub_download(repo_id=f"{HF_USER}/{POSTS_REPO}", filename="new_posts.json", repo_type="dataset")
     existing_posts = json.load(open(existing_path))
 except Exception:
     existing_posts = []
@@ -116,11 +118,11 @@ with open("./new_posts.json", "w", encoding="utf-8") as f:
 
 
 api = HfApi(token=os.getenv("HF_TOKEN"))
-api.create_repo(repo_id=f"{HF_USER}/sentiment_posts", repo_type="dataset", exist_ok=True)
+api.create_repo(repo_id=f"{HF_USER}/{POSTS_REPO}", repo_type="dataset", exist_ok=True)
 api.upload_file(
     path_or_fileobj="./new_posts.json",
     path_in_repo="new_posts.json",
-    repo_id=f"{HF_USER}/sentiment_posts",
+    repo_id=f"{HF_USER}/{POSTS_REPO}",
     repo_type="dataset"
 )
 
