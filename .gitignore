@@ -4,3 +4,8 @@ config
 logs
 __pycache__
 .pytest_cache
+**/kernel-metadata.json
+*.db
+.venv
+venv
+plugins
