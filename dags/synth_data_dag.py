@@ -10,6 +10,10 @@ with DAG(
 ) as dag:
     update_secrets = BashOperator(
         task_id="update_kaggle_secrets",
+        # BashOperator default to tmp working directory
+        # set the working folder with cd to allow relative path to resolve correctly
+        # kaggle installation in /home/airflow/.local/bin not in path
+        # export to correctly reference kaggle executable for kaggle cli subprocess command 
         bash_command="export PATH=$PATH:/home/airflow/.local/bin && cd /opt/airflow && python scripts/update_kaggle_secrets.py",
         env={
             "KAGGLE_USERNAME": "{{ var.value.KAGGLE_USERNAME}}",

@@ -6,6 +6,7 @@ KAGGLE_USERNAME = os.environ["KAGGLE_USERNAME"]
 
 os.makedirs("/tmp/kaggle-secrets", exist_ok=True)
 
+# Load template and write secrets and variables to new file to be pushed as kaggle input for notebooks
 with open("secrets/dataset-metadata_template.json") as f:
     dataset_metadata = json.load(f)
 dataset_metadata["id"] = f"{KAGGLE_USERNAME}/secrets"
@@ -28,6 +29,7 @@ secrets.update({
 with open("/tmp/kaggle-secrets/secrets.json", "w") as f:
     json.dump(secrets, f)
 
+# check dataset existance to update or create
 exists = subprocess.run(
     ["kaggle", "datasets", "metadata", "-d", f"{KAGGLE_USERNAME}/secrets"],
     capture_output=True,

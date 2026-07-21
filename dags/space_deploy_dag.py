@@ -17,6 +17,8 @@ with DAG(
 
     deployment = BashOperator(
         task_id="complete_app_deployment",
+        # BashOperator default to tmp working directory
+        # set the working folder with cd to allow relative path to resolve correctly
         bash_command="cd /opt/airflow && python scripts/deploy_space.py",
         env={
             "HF_TOKEN": "{{ var.value.HF_TOKEN }}",

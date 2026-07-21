@@ -10,6 +10,8 @@ with DAG(
 ) as dag:
     deploy_grafana = BashOperator(
         task_id = "push_dashboard_to_cloud",
+        # BashOperator default to tmp working directory
+        # set the working folder with cd to allow relative path to resolve correctly
         bash_command="cd /opt/airflow && python scripts/deploy_grafana.py",
         env={
             "GRAFANA_TOKEN": "{{ var.value.GRAFANA_TOKEN}}",
