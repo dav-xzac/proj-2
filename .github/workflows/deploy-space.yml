@@ -4,23 +4,22 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_USER: ${{ vars.HF_USER }}
+      SPACE_NAME: ${{ vars.SPACE_NAME }}
+      MODEL_REPO: ${{ vars.MODEL_REPO }}
+      GRAFANA_URL: ${{ vars.GRAFANA_URL }}
+      KAGGLE_USERNAME: ${{ vars.KAGGLE_USERNAME }}
+      COMPANY: ${{ vars.COMPANY }}
+      SYNTH_DATA_REPO: ${{ vars.SYNTH_DATA_REPO }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
+      - run: pip install huggingface_hub
+      - run: python scripts/deploy_space.py
 
-      - name: Push app/ to HuggingFace Space
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_USER: ${{ vars.HF_USER }}
-          SPACE_NAME: ${{ vars.SPACE_NAME }}
-        run: |
-          pip install huggingface_hub
-          python scripts/deploy_space.py
 
