@@ -13,6 +13,7 @@ jobs:
             SPACE_URL: ${{ vars.SPACE_URL}}
             HF_USER: ${{ vars.HF_USER}}
             COMPANY: ${{ vars.COMPANY}}
+            POSTS_REPO: ${{ vars.POSTS_REPO}}
         steps:
             - name: api_call
               uses: actions/checkout@v4
