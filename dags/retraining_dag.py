@@ -11,6 +11,8 @@ with DAG(
 ) as dag:
     check_drift = BashOperator(
         task_id="check_drift",
+        # BashOperator default to tmp working directory
+        # set the working folder with cd to allow relative path to resolve correctly
         bash_command="cd /opt/airflow && python scripts/check_drift.py",
         env = {
             "SPACE_URL": "{{ var.value.SPACE_URL }}",
@@ -31,6 +33,10 @@ with DAG(
 
     update_secrets = BashOperator(
         task_id="update_kaggle_secrets",
+        # BashOperator default to tmp working directory
+        # set the working folder with cd to allow relative path to resolve correctly
+        # kaggle installation in /home/airflow/.local/bin not in path
+        # export to correctly reference kaggle executable for kaggle cli subprocess command 
         bash_command="export PATH=$PATH:/home/airflow/.local/bin && cd /opt/airflow && python scripts/update_kaggle_secrets.py",
         env={
             "KAGGLE_USERNAME": "{{ var.value.KAGGLE_USERNAME}}",

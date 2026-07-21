@@ -7,6 +7,7 @@ import sys
 folder, kernel_slug = sys.argv[1], sys.argv[2]
 KAGGLE_USERNAME = os.environ["KAGGLE_USERNAME"]
 
+# Replace placeholder in kernel metadata and write to the file to be pushed to kaggle
 with open(f"{folder}/kernel-metadata_template.json") as f:
     metadata = json.load(f)
 metadata["id"] = f"{KAGGLE_USERNAME}/{kernel_slug}"
