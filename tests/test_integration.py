@@ -13,10 +13,12 @@ def test_predict():
     assert data["sentiment"] in ["negative", "neutral", "positive"]
     assert 0.8 <= data["confidence"] <= 1.0
 
+# test correct MLFLOW internal proxy integration
 def test_mlflow_proxy():
     r = requests.get(f"{BASE}/mlflow/")
     assert r.status_code == 200
 
+# check the correction and persistency of logged prediction in the database
 def test_predict_to_logs():
     r = requests.post(f"{BASE}/predict", json={"text": "This is a wonderful day!"})
     predicted = r.json()
