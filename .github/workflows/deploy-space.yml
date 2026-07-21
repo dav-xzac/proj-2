@@ -17,6 +17,7 @@ jobs:
       KAGGLE_USERNAME: ${{ vars.KAGGLE_USERNAME }}
       COMPANY: ${{ vars.COMPANY }}
       SYNTH_DATA_REPO: ${{ vars.SYNTH_DATA_REPO }}
+      POSTS_REPO: ${{ vars.POSTS_REPO}}
     steps:
       - uses: actions/checkout@v4
       - run: pip install huggingface_hub
